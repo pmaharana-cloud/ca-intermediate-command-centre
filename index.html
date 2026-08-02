@@ -1,0 +1,4442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CA Intermediate Command Centre</title>
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: #111827;
+      --bg-card-hover: #1f293d;
+      --bg-elevated: #1a2336;
+      --border-color: #243049;
+      --border-focus: #4f46e5;
+      
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --accent-primary: #6366f1;
+      --accent-primary-hover: #4f46e5;
+      --accent-glow: rgba(99, 102, 241, 0.2);
+      
+      /* Status Colors */
+      --status-not-started-bg: rgba(75, 85, 99, 0.2);
+      --status-not-started-text: #9ca3af;
+      --status-not-started-border: #374151;
+      
+      --status-in-progress-bg: rgba(245, 158, 11, 0.15);
+      --status-in-progress-text: #fbbf24;
+      --status-in-progress-border: #b45309;
+      
+      --status-studied-bg: rgba(16, 185, 129, 0.15);
+      --status-studied-text: #34d399;
+      --status-studied-border: #047857;
+      
+      --status-mastered-bg: rgba(168, 85, 247, 0.15);
+      --status-mastered-text: #c084fc;
+      --status-mastered-border: #7e22ce;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      line-height: 1.5;
+      font-size: 15px;
+      min-height: 100vh;
+      padding-bottom: 80px; /* Space for sticky bottom nav */
+      overflow-x: hidden;
+    }
+
+    /* Typography Utilities */
+    h1, h2, h3, h4 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-not-started {
+      background: var(--status-not-started-bg);
+      color: var(--status-not-started-text);
+      border-color: var(--status-not-started-border);
+    }
+
+    .badge-in-progress {
+      background: var(--status-in-progress-bg);
+      color: var(--status-in-progress-text);
+      border-color: var(--status-in-progress-border);
+    }
+
+    .badge-studied {
+      background: var(--status-studied-bg);
+      color: var(--status-studied-text);
+      border-color: var(--status-studied-border);
+    }
+
+    .badge-mastered {
+      background: var(--status-mastered-bg);
+      color: var(--status-mastered-text);
+      border-color: var(--status-mastered-border);
+    }
+
+    /* Container Layout */
+    .app-container {
+      max-width: 768px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 20px 0;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Global Progress Card */
+    .hero-card {
+      background: linear-gradient(145deg, #161e31, #0f1626);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 14px;
+    }
+
+    .hero-stat-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .hero-stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .hero-stat-subtext {
+      font-size: 13px;
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    /* Progress Bar Component */
+    .progress-bar-track {
+      height: 10px;
+      background-color: var(--bg-dark);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      display: flex;
+      border: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+
+    .progress-segment {
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+
+    .progress-segment.mastered { background-color: #c084fc; }
+    .progress-segment.studied { background-color: #34d399; }
+    .progress-segment.in-progress { background-color: #fbbf24; }
+
+    .status-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+
+    .summary-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 8px 4px;
+    }
+
+    .summary-count {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .summary-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Subject Cards Grid */
+    .section-title {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .subject-cards-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .subject-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .subject-card:active {
+      transform: scale(0.985);
+    }
+
+    .subject-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .paper-code {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.12);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 4px;
+      display: inline-block;
+    }
+
+    .paper-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .subject-percentage {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      text-align: right;
+    }
+
+    .subject-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    /* Detailed Chapter List Modal / View */
+    .view-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-dark);
+      z-index: 100;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+    }
+
+    .view-modal.active {
+      display: flex;
+    }
+
+    .modal-header {
+      position: sticky;
+      top: 0;
+      background: rgba(9, 13, 22, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .btn-icon {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .btn-icon:active {
+      background: var(--bg-elevated);
+    }
+
+    .modal-title-group {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .modal-body {
+      padding: 16px;
+      flex: 1;
+      max-width: 768px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Chapter List Items */
+    .chapter-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chapter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .chapter-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    .chapter-date {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .chapter-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .status-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 8px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-dark);
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .status-btn.active.not-started {
+      background: var(--status-not-started-bg);
+      color: var(--status-not-started-text);
+      border-color: var(--status-not-started-border);
+    }
+    .status-btn.active.in-progress {
+      background: var(--status-in-progress-bg);
+      color: var(--status-in-progress-text);
+      border-color: var(--status-in-progress-border);
+    }
+    .status-btn.active.studied {
+      background: var(--status-studied-bg);
+      color: var(--status-studied-text);
+      border-color: var(--status-studied-border);
+    }
+    .status-btn.active.mastered {
+      background: var(--status-mastered-bg);
+      color: var(--status-mastered-text);
+      border-color: var(--status-mastered-border);
+    }
+
+    /* Today Screen Specific */
+    .today-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 18px 0 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .today-empty {
+      text-align: center;
+      padding: 48px 20px;
+      background: var(--bg-card);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+      margin-top: 20px;
+    }
+
+    .today-empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .today-empty-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .today-empty-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .today-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid #fbbf24;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .today-item-card.overdue {
+      border-left: 4px solid #f43f5e;
+      background: rgba(244, 63, 94, 0.06);
+    }
+
+    .today-item-card.due-today {
+      border-left: 4px solid #6366f1;
+      background: rgba(99, 102, 241, 0.06);
+    }
+
+    .today-item-card.in-progress {
+      border-left: 4px solid #fbbf24;
+    }
+
+    .badge-overdue {
+      background: rgba(244, 63, 94, 0.2);
+      color: #f43f5e;
+      border-color: rgba(244, 63, 94, 0.4);
+    }
+
+    .badge-due-today {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .badge-stage {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border-color: rgba(168, 85, 247, 0.4);
+    }
+
+    .btn-action-revision {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid #4f46e5;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 13px;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+
+    .btn-action-revision:active {
+      background: rgba(99, 102, 241, 0.35);
+    }
+
+    .sim-bar {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* --- PHASE 3: CAPACITY METER, PLANNER & BACKLOG --- */
+    .capacity-card {
+      background: linear-gradient(145deg, #161e31, #0f1626);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .capacity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .capacity-title {
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .capacity-value {
+      font-weight: 800;
+      color: var(--accent-primary);
+    }
+
+    .view-toggle-bar {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      margin-bottom: 16px;
+    }
+
+    .toggle-option {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border: none;
+      background: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .toggle-option.active {
+      background: var(--accent-primary);
+      color: #fff;
+    }
+
+    .time-slot-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .time-slot-row {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .time-slot-row.completed-slot {
+      opacity: 0.6;
+      background: rgba(16, 185, 129, 0.05);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .slot-time-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      width: 75px;
+      flex-shrink: 0;
+    }
+
+    .slot-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .slot-empty {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .unscheduled-tray {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .unscheduled-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .backlog-hero {
+      background: linear-gradient(145deg, #1e1b4b, #0f172a);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .backlog-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid #a855f7;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .backlog-item-card.watched {
+      opacity: 0.6;
+      border-left-color: #34d399;
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    /* --- PHASE 4: GAMIFICATION & REWARDS --- */
+    .rewards-hero {
+      background: linear-gradient(145deg, #1e1b4b, #0f172a);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .rewards-badge-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .badge-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+    }
+
+    .badge-card.locked {
+      opacity: 0.45;
+      filter: grayscale(0.8);
+      background: rgba(17, 24, 39, 0.5);
+    }
+
+    .badge-icon {
+      font-size: 36px;
+      margin-bottom: 4px;
+    }
+
+    .badge-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .badge-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .xp-toast-el {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(99, 102, 241, 0.95);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+      z-index: 300;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .xp-toast-el.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* --- PHASE 5: COUNTDOWN, CALENDAR, PROGRESS --- */
+    .btn-countdown-pill {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      border-radius: var(--radius-full);
+      padding: 6px 12px;
+      font-weight: 700;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-countdown-pill:hover {
+      background: rgba(99, 102, 241, 0.25);
+      color: #fff;
+    }
+
+    /* Month Calendar */
+    .calendar-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .calendar-header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .calendar-day-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding-bottom: 6px;
+    }
+
+    .calendar-cell {
+      aspect-ratio: 1;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .calendar-cell:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .calendar-cell.other-month {
+      opacity: 0.3;
+    }
+
+    .calendar-cell.is-today {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+    }
+
+    .calendar-cell.is-exam {
+      border-color: #f43f5e;
+      background: rgba(244, 63, 94, 0.15);
+    }
+
+    .cal-dot {
+      width: 5px;
+      height: 5px;
+      background: #10b981;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 4px;
+    }
+
+    .cal-exam-flag {
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      font-size: 10px;
+    }
+
+    /* 90-Day Heatmap */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      gap: 4px;
+      margin-top: 12px;
+    }
+
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .heatmap-cell.level-1 { background: #064e3b; }
+    .heatmap-cell.level-2 { background: #047857; }
+    .heatmap-cell.level-3 { background: #10b981; }
+    .heatmap-cell.level-4 { background: #34d399; }
+
+    /* Task Aging Visual Urgency */
+    .today-item-card.aging-amber {
+      border-left-color: #fbbf24;
+      background: rgba(245, 158, 11, 0.05);
+    }
+
+    .today-item-card.aging-red {
+      border-left-color: #f43f5e;
+      background: rgba(244, 63, 94, 0.08);
+    }
+
+    .pulsing-badge {
+      animation: pulseAlert 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseAlert {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.05); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .nav-item {
+      position: relative;
+    }
+
+    .nav-badge {
+      position: absolute;
+      top: 2px;
+      right: 12px;
+      background: #f43f5e;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 0 6px rgba(244, 63, 94, 0.6);
+    }
+
+    .btn-action-success {
+      background: var(--status-studied-bg);
+      color: var(--status-studied-text);
+      border: 1px solid var(--status-studied-border);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 13px;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+
+    .btn-action-success:active {
+      background: rgba(16, 185, 129, 0.3);
+    }
+
+    /* Settings View */
+    .settings-group {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .settings-group-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-select, .form-input {
+      width: 100%;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .btn-primary:active {
+      background: var(--accent-primary-hover);
+    }
+
+    .btn-danger {
+      background: rgba(244, 63, 94, 0.15);
+      color: #f43f5e;
+      border: 1px solid #9f1239;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .editable-chapter-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+    }
+
+    .editable-chapter-title {
+      font-size: 13px;
+      flex: 1;
+    }
+
+    .btn-sm-action {
+      background: transparent;
+      color: var(--accent-primary);
+      border: none;
+      font-size: 12px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-sm-danger {
+      background: transparent;
+      color: #f43f5e;
+      border: none;
+      font-size: 12px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 90;
+      max-width: 768px;
+      margin: 0 auto;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 600;
+      gap: 4px;
+      padding: 4px 16px;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent-primary);
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #10b981;
+      color: #064e3b;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div>
+        <div class="brand-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          CA Inter HQ
+        </div>
+        <div class="brand-subtitle">CA Intermediate Command Centre • Phase 5 HQ</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="btn-countdown-pill" onclick="openExamModal()">
+          ⏳ <span id="header-countdown-text">...</span>
+        </button>
+        <div id="header-gamify-bar" style="display:flex; align-items:center; gap:8px;"></div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main id="main-content">
+      <!-- Dynamic View Injected Here -->
+    </main>
+  </div>
+
+  <!-- SUBJECT DETAIL MODAL -->
+  <div id="subject-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeSubjectModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div id="modal-paper-code" class="paper-code">PAPER 1</div>
+        <div id="modal-paper-title" class="modal-title">Subject Title</div>
+      </div>
+    </div>
+    <div class="modal-body" id="modal-chapter-list">
+      <!-- Chapters list rendered dynamically -->
+    </div>
+  </div>
+
+  <!-- EDIT CHAPTER MODAL -->
+  <div id="edit-chapter-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeEditModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title">Edit Chapter Name</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="settings-group">
+        <div class="form-group">
+          <label class="form-label">Chapter Title</label>
+          <input type="text" id="edit-chapter-input" class="form-input">
+        </div>
+        <button class="btn-primary" onclick="saveEditedChapter()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD BACKLOG MODAL -->
+  <div id="add-backlog-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeAddBacklogModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title">Log Pending Lecture Video</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="settings-group">
+        <div class="form-group">
+          <label class="form-label">Subject Paper</label>
+          <select id="backlog-paper-select" class="form-select" onchange="onBacklogPaperSelectChange(this.value)"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chapter</label>
+          <select id="backlog-chapter-select" class="form-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Specific Topic / Lecture Details (Optional)</label>
+          <input type="text" id="backlog-topic-input" class="form-input" placeholder="e.g. AS 14 Entries & Illus 4 or Part 2">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Number of Lectures</label>
+            <input type="number" min="1" max="50" id="backlog-count-input" class="form-input" placeholder="e.g. 1" value="1">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Total Duration (Hours)</label>
+            <input type="number" step="0.25" min="0.25" id="backlog-duration-input" class="form-input" placeholder="e.g. 2.0" value="2.0">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="saveNewBacklogEntry()">+ Log Video Lecture</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSIGN TIME SLOT MODAL -->
+  <div id="assign-slot-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeAssignSlotModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title" id="assign-slot-modal-title">Assign Task to Slot</div>
+      </div>
+    </div>
+    <div class="modal-body" id="assign-slot-modal-body">
+      <!-- Options rendered dynamically -->
+    </div>
+  </div>
+
+  <!-- EXAM DETAILS MODAL -->
+  <div id="exam-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeExamModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title">CA Inter Exam Countdown</div>
+      </div>
+    </div>
+    <div class="modal-body" id="exam-modal-body">
+      <!-- Dynamic exam details -->
+    </div>
+  </div>
+
+  <!-- DATE DETAIL MODAL -->
+  <div id="date-detail-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeDateDetailModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title" id="date-detail-title">Date Details</div>
+      </div>
+    </div>
+    <div class="modal-body" id="date-detail-body">
+      <!-- Dynamic date tasks details -->
+    </div>
+  </div>
+
+  <!-- LOG TEST MODAL -->
+  <div id="log-test-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeLogTestModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title">Log Sunday Online Test</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="settings-group">
+        <div class="form-group">
+          <label class="form-label">Subject Paper</label>
+          <select id="test-paper-select" class="form-select" onchange="onTestPaperSelectChange(this.value)"></select>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Test Date</label>
+            <input type="date" id="test-date-input" class="form-input">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Test Name / Note (Optional)</label>
+            <input type="text" id="test-name-input" class="form-input" placeholder="e.g. Sunday Mock #4">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-dark); padding:10px 12px; border-radius:var(--radius-md); margin-bottom:14px; border:1px solid var(--border-color);">
+          <div>
+            <div style="font-size:13px; font-weight:700; color:#fff;">⚡ Quick Mode (Overall Score Only)</div>
+            <div style="font-size:11px; color:var(--text-muted);">Toggle ON to log single overall score without chapter breakdown</div>
+          </div>
+          <input type="checkbox" id="test-quick-mode-toggle" style="width:20px; height:20px; cursor:pointer;" onchange="toggleTestQuickMode(this.checked)">
+        </div>
+
+        <div id="test-quick-mode-fields" style="display:none; margin-bottom:14px;">
+          <div style="display:flex; gap:10px;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Total Questions Attempted</label>
+              <input type="number" min="1" id="test-quick-attempted" class="form-input" placeholder="e.g. 30">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Correct Answers</label>
+              <input type="number" min="0" id="test-quick-correct" class="form-input" placeholder="e.g. 21">
+            </div>
+          </div>
+        </div>
+
+        <div id="test-chapter-mode-fields">
+          <div style="font-size:12px; font-weight:700; color:#a5b4fc; margin-bottom:8px;">Chapter-Wise Performance Breakdown</div>
+          <div id="test-chapter-input-list">
+            <!-- Dynamic chapter rows -->
+          </div>
+        </div>
+
+        <button class="btn-primary" style="margin-top:14px;" onclick="saveLoggedTest()">+ Save Test Results</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESTORE PREVIEW MODAL -->
+  <div id="restore-preview-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeRestorePreviewModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title">Confirm Backup Restore</div>
+      </div>
+    </div>
+    <div class="modal-body" id="restore-preview-body">
+      <!-- Dynamic preview details -->
+    </div>
+  </div>
+
+  <!-- ADD SUBJECT MODAL -->
+  <div id="add-subject-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeAddSubjectModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title">Add Custom Subject</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="settings-group">
+        <div class="form-group">
+          <label class="form-label">Subject Code</label>
+          <input type="text" id="subject-code-input" class="form-input" placeholder="e.g. Paper 7">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject Title</label>
+          <input type="text" id="subject-title-input" class="form-input" placeholder="e.g. Information Systems Control & Audit">
+        </div>
+        <button class="btn-primary" onclick="saveNewCustomSubject()">+ Create Subject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESET ALL SAFEGUARD MODAL -->
+  <div id="reset-all-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeScopedResetModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title" style="color:#f43f5e">Reset Progress Safeguard</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="settings-group" style="border-color:#9f1239">
+        <p style="font-size:13px; color:#f43f5e; font-weight:700; margin-bottom:12px">
+          ⚠️ Danger: This will reset chapter study statuses back to Not Started.
+        </p>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px">
+          Type the exact word <strong>RESET</strong> in capital letters to confirm:
+        </p>
+        <div class="form-group">
+          <input type="text" id="reset-confirm-text" class="form-input" placeholder="Type RESET to confirm" style="border-color:#f43f5e">
+        </div>
+
+        <div style="margin-bottom:14px; font-size:12px; color:var(--text-muted);">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <input type="checkbox" id="reset-clear-tests-check">
+            <label for="reset-clear-tests-check">Also delete Test Logs</label>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="reset-clear-xp-check">
+            <label for="reset-clear-xp-check">Also delete XP and Badges</label>
+          </div>
+        </div>
+
+        <button class="btn-danger" onclick="executeScopedReset()">Confirm Reset All Progress</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+      </svg>
+      Dashboard
+    </button>
+    <button class="nav-item" id="nav-today" onclick="switchTab('today')">
+      <span id="nav-today-badge" class="nav-badge" style="display:none;">0</span>
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"></line>
+        <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"></line>
+        <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"></line>
+      </svg>
+      Today
+    </button>
+    <button class="nav-item" id="nav-backlog" onclick="switchTab('backlog')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+      </svg>
+      Backlog
+    </button>
+    <button class="nav-item" id="nav-calendar" onclick="switchTab('calendar')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      Calendar
+    </button>
+    <button class="nav-item" id="nav-progress" onclick="switchTab('progress')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="20" x2="18" y2="10"></line>
+        <line x1="12" y1="20" x2="12" y2="4"></line>
+        <line x1="6" y1="20" x2="6" y2="14"></line>
+      </svg>
+      Progress
+    </button>
+    <button class="nav-item" id="nav-rewards" onclick="switchTab('rewards')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="7"></circle>
+        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+      </svg>
+      Rewards
+    </button>
+    <button class="nav-item" id="nav-tests" onclick="switchTab('tests')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+      </svg>
+      Tests
+    </button>
+    <button class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      Syllabus
+    </button>
+  </nav>
+
+  <!-- SAVED TOAST -->
+  <div id="toast" class="toast">Saved ✓</div>
+  <!-- XP TOAST -->
+  <div id="xp-toast" class="xp-toast-el">+15 XP ⚡</div>
+
+  <script>
+    // --- DEFAULT HARDCODED SYLLABUS ---
+    const DEFAULT_SYLLABUS = [
+      {
+        id: "paper-1",
+        code: "Paper 1",
+        title: "Advanced Accounting",
+        chapters: [
+          "Introduction to AS",
+          "Framework for Financial Statements",
+          "Applicability of AS",
+          "Presentation & Disclosures AS (AS 1, 3, 17, 18, 20, 24, 25)",
+          "Assets Based AS (AS 2, 10, 13, 16, 19, 26, 28)",
+          "Liabilities Based AS (AS 15, 29)",
+          "Items Impacting FS AS (AS 4, 5, 11, 22)",
+          "Revenue Based AS (AS 7, 9)",
+          "Other AS (AS 12, 14)",
+          "AS for Consolidated FS (AS 21, 23, 27)",
+          "Financial Statements of Companies",
+          "Buy Back of Securities",
+          "Amalgamation of Companies",
+          "Accounting for Reconstruction",
+          "Accounting for Branches"
+        ]
+      },
+      {
+        id: "paper-2",
+        code: "Paper 2",
+        title: "Corporate and Other Laws",
+        chapters: [
+          "Preliminary",
+          "Incorporation & Incidental Matters",
+          "Prospectus & Allotment of Securities",
+          "Share Capital and Debentures",
+          "Acceptance of Deposits",
+          "Registration of Charges",
+          "Management and Administration",
+          "Declaration & Payment of Dividend",
+          "Accounts of Companies",
+          "Audit and Auditors",
+          "Companies Incorporated Outside India",
+          "The LLP Act, 2008",
+          "General Clauses Act 1897",
+          "Interpretation of Statutes",
+          "FEMA, 1999"
+        ]
+      },
+      {
+        id: "paper-3",
+        code: "Paper 3",
+        title: "Taxation",
+        chapters: [
+          "Basic Concepts",
+          "Residential Status & Total Income",
+          "Heads of Income (Salaries, House Property, PGBP, Capital Gains, Other Sources)",
+          "Clubbing of Income",
+          "Set-off & Carry Forward Losses",
+          "Deductions from GTI",
+          "TDS, TCS and Advance Tax",
+          "Returns & Self-Assessment",
+          "Income-tax Liability Optimisation",
+          "GST in India – An Intro",
+          "Supply under GST",
+          "Charge of GST",
+          "Place of Supply",
+          "Exemptions from GST",
+          "Time of Supply",
+          "Value of Supply",
+          "Input Tax Credit (ITC)",
+          "Registration",
+          "Tax Invoice, Credit & Debit Notes",
+          "Accounts and Records",
+          "E-Way Bill",
+          "Payment of Tax",
+          "TDS & TCS under GST",
+          "Returns"
+        ]
+      },
+      {
+        id: "paper-4",
+        code: "Paper 4",
+        title: "Cost and Management Accounting",
+        chapters: [
+          "Intro to Cost & Mgmt Accounting",
+          "Material Cost",
+          "Employee Cost & Direct Expenses",
+          "Overheads: Absorption Costing",
+          "Activity Based Costing (ABC)",
+          "Cost Sheet",
+          "Cost Accounting System",
+          "Unit & Batch Costing",
+          "Job Costing",
+          "Process & Operation Costing",
+          "Joint Products & By Products",
+          "Service Costing",
+          "Standard Costing",
+          "Marginal Costing",
+          "Budgets & Budgetary Control"
+        ]
+      },
+      {
+        id: "paper-5",
+        code: "Paper 5",
+        title: "Auditing and Ethics",
+        chapters: [
+          "Nature, Objective & Scope of Audit",
+          "Audit Strategy, Planning & Programme",
+          "Risk Assessment & Internal Control",
+          "Audit Evidence",
+          "Audit of Financial Statement Items",
+          "Audit Documentation",
+          "Completion and Review",
+          "Audit Report",
+          "Audit of Special Entities",
+          "Audit of Banks",
+          "Ethics & Audit Engagements"
+        ]
+      },
+      {
+        id: "paper-6",
+        code: "Paper 6",
+        title: "Financial Management & Strategic Management",
+        chapters: [
+          "Scope & Objectives of FM",
+          "Types of Financing",
+          "Ratio Analysis",
+          "Cost of Capital",
+          "Capital Structure",
+          "Leverages",
+          "Investment Decisions",
+          "Dividend Decisions",
+          "Management of Working Capital",
+          "Intro to Strategic Management",
+          "Strategic Analysis: External",
+          "Strategic Analysis: Internal",
+          "Strategic Choices",
+          "Strategy Implementation"
+        ]
+      }
+    ];
+
+    const STORAGE_KEY = "ca_inter_command_centre_v1";
+    const STAGE_INTERVALS = { 1: 1, 2: 3, 3: 7, 4: 15, 5: 30 };
+
+    // App State
+    let appState = {
+      activeTab: "dashboard",
+      papers: [],
+      selectedPaperId: null,
+      editingChapter: null, // { paperId, chapterId }
+      simulatedDaysOffset: 0,
+      dailyCapacityHours: 4.0,
+      plannerStartHour: 6,
+      plannerEndHour: 23,
+      todayViewMode: "list", // 'list' | 'schedule'
+      backlog: [],           // [{ id, paperId, chapterId, durationHours, dateAdded, watched, watchedDate }]
+      timeSlotAssignments: [],// [{ id, date, slotHour, taskType, paperId, chapterId, backlogId, title, durationHours, completed }]
+      // Phase 4 Gamification
+      totalXP: 0,
+      currentStreak: 0,
+      lastCompletionDate: null,
+      completedDates: {},
+      dailyClearBonusAwarded: {},
+      unlockedBadges: [],
+      showLevelTitles: true,
+      // Phase 5 Countdown & Calendar
+      examDate: "2027-05-27",
+      completionHistory: [],
+      calendarMonthOffset: 0,
+      // Phase 6 Tests & Weak Topics
+      testsLog: [],
+      // Phase 7 Customizations
+      customQuotes: [],
+      lastBackupDate: null,
+      taskHistoryLog: [],
+      selectedTheme: "indigo"
+    };
+
+    // --- DATE & SIMULATION HELPERS ---
+    function getTodayDate() {
+      const d = new Date();
+      if (appState.simulatedDaysOffset) {
+        d.setDate(d.getDate() + appState.simulatedDaysOffset);
+      }
+      return d.toISOString().split("T")[0];
+    }
+
+    function addDaysToDate(dateStr, days) {
+      const d = new Date(dateStr + "T00:00:00");
+      d.setDate(d.getDate() + days);
+      return d.toISOString().split("T")[0];
+    }
+
+    function daysBetween(startDateStr, endDateStr) {
+      const d1 = new Date(startDateStr + "T00:00:00");
+      const d2 = new Date(endDateStr + "T00:00:00");
+      const diffTime = d2.getTime() - d1.getTime();
+      return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    // --- LOCAL STORAGE FUNCTIONS ---
+    function initData() {
+      const savedOffset = localStorage.getItem(STORAGE_KEY + "_offset");
+      if (savedOffset !== null) {
+        appState.simulatedDaysOffset = parseInt(savedOffset, 10) || 0;
+      }
+
+      const savedConfig = localStorage.getItem(STORAGE_KEY + "_config");
+      if (savedConfig) {
+        try {
+          const cfg = JSON.parse(savedConfig);
+          appState.dailyCapacityHours = cfg.dailyCapacityHours ?? 4.0;
+          appState.plannerStartHour = cfg.plannerStartHour ?? 6;
+          appState.plannerEndHour = cfg.plannerEndHour ?? 23;
+          appState.todayViewMode = cfg.todayViewMode || 'list';
+        } catch(e) {}
+      }
+
+      const savedBacklog = localStorage.getItem(STORAGE_KEY + "_backlog");
+      if (savedBacklog) {
+        try { appState.backlog = JSON.parse(savedBacklog); } catch(e) {}
+      }
+
+      const savedSlots = localStorage.getItem(STORAGE_KEY + "_slots");
+      if (savedSlots) {
+        try { appState.timeSlotAssignments = JSON.parse(savedSlots); } catch(e) {}
+      }
+
+      const savedGamify = localStorage.getItem(STORAGE_KEY + "_gamify");
+      if (savedGamify) {
+        try {
+          const g = JSON.parse(savedGamify);
+          appState.totalXP = g.totalXP || 0;
+          appState.currentStreak = g.currentStreak || 0;
+          appState.lastCompletionDate = g.lastCompletionDate || null;
+          appState.completedDates = g.completedDates || {};
+          appState.dailyClearBonusAwarded = g.dailyClearBonusAwarded || {};
+          appState.unlockedBadges = g.unlockedBadges || [];
+          appState.showLevelTitles = g.showLevelTitles !== false;
+          appState.examDate = g.examDate || "2027-05-27";
+          appState.completionHistory = g.completionHistory || [];
+          appState.testsLog = g.testsLog || [];
+          appState.customQuotes = g.customQuotes || DEFAULT_QUOTES;
+          appState.lastBackupDate = g.lastBackupDate || null;
+          appState.taskHistoryLog = g.taskHistoryLog || [];
+          appState.selectedTheme = g.selectedTheme || "indigo";
+        } catch(e) {}
+      }
+
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          appState.papers = JSON.parse(saved);
+          return;
+        } catch (e) {
+          console.error("Failed to parse saved state", e);
+        }
+      }
+      // Populate defaults
+      appState.papers = DEFAULT_SYLLABUS.map((paper) => ({
+        id: paper.id,
+        code: paper.code,
+        title: paper.title,
+        chapters: paper.chapters.map((ch, idx) => ({
+          id: `${paper.id}-ch-${idx + 1}-${Date.now()}`,
+          title: ch,
+          status: "Not Started", // 'Not Started' | 'In Progress' | 'Studied' | 'Mastered'
+          studiedDate: null,
+          revisionStage: 0,
+          revisionDueDate: null,
+          lastRevisionDate: null
+        }))
+      }));
+      saveState(false);
+    }
+
+    function saveState(showToastNotification = true) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.papers));
+        localStorage.setItem(STORAGE_KEY + "_offset", appState.simulatedDaysOffset || 0);
+        localStorage.setItem(STORAGE_KEY + "_config", JSON.stringify({
+          dailyCapacityHours: appState.dailyCapacityHours,
+          plannerStartHour: appState.plannerStartHour,
+          plannerEndHour: appState.plannerEndHour,
+          todayViewMode: appState.todayViewMode
+        }));
+        localStorage.setItem(STORAGE_KEY + "_backlog", JSON.stringify(appState.backlog));
+        localStorage.setItem(STORAGE_KEY + "_slots", JSON.stringify(appState.timeSlotAssignments));
+        localStorage.setItem(STORAGE_KEY + "_gamify", JSON.stringify({
+          totalXP: appState.totalXP || 0,
+          currentStreak: appState.currentStreak || 0,
+          lastCompletionDate: appState.lastCompletionDate || null,
+          completedDates: appState.completedDates || {},
+          dailyClearBonusAwarded: appState.dailyClearBonusAwarded || {},
+          unlockedBadges: appState.unlockedBadges || [],
+          showLevelTitles: appState.showLevelTitles !== false,
+          examDate: appState.examDate || "2027-05-27",
+          completionHistory: appState.completionHistory || [],
+          testsLog: appState.testsLog || [],
+          customQuotes: appState.customQuotes || DEFAULT_QUOTES,
+          lastBackupDate: appState.lastBackupDate || null,
+          taskHistoryLog: appState.taskHistoryLog || [],
+          selectedTheme: appState.selectedTheme || "indigo"
+        }));
+        if (showToastNotification) {
+          showToast();
+        }
+      } catch (e) {
+        console.error("Failed to save to localStorage", e);
+      }
+    }
+
+    function showToast() {
+      const toast = document.getElementById("toast");
+      toast.classList.add("show");
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1500);
+    }
+
+    // --- PHASE 7: QUOTES & THEME ENGINE ---
+    const DEFAULT_QUOTES = [
+      "One revision beats ten re-reads.",
+      "Backlog doesn't disappear by ignoring it — clear one hour at a time.",
+      "You don't need a perfect day, you need a finished topic.",
+      "ICAI doesn't reward those who started early. It rewards those who revised last.",
+      "A blank day today is a harder week later.",
+      "The syllabus isn't your enemy. Inconsistency is.",
+      "Every chapter you revise today is one less panic on exam eve.",
+      "Discipline is choosing the study session over the mood.",
+      "Rank holders aren't smarter. They're just more consistent.",
+      "Don't count the days left. Count the chapters mastered.",
+      "Tired is normal. Quitting the revision cycle is not.",
+      "The lecture you postpone today becomes tomorrow's backlog."
+    ];
+
+    const THEMES_DEF = {
+      indigo: { name: "Midnight Indigo", bg: "#090d16", accent: "#6366f1", border: "#243049" },
+      emerald: { name: "Emerald Scholar", bg: "#061a14", accent: "#10b981", border: "#113e30" },
+      purple: { name: "Cyber Purple", bg: "#0f051d", accent: "#a855f7", border: "#3b1764" },
+      rose: { name: "Sunset Rose", bg: "#18080c", accent: "#f43f5e", border: "#4c1422" },
+      ocean: { name: "Ocean Blue", bg: "#081420", accent: "#3b82f6", border: "#183854" }
+    };
+
+    function applyTheme(themeKey) {
+      const theme = THEMES_DEF[themeKey] || THEMES_DEF.indigo;
+      appState.selectedTheme = themeKey;
+      document.documentElement.style.setProperty("--bg-dark", theme.bg);
+      document.documentElement.style.setProperty("--accent-primary", theme.accent);
+      document.documentElement.style.setProperty("--border-focus", theme.accent);
+      document.documentElement.style.setProperty("--border-color", theme.border);
+      saveState(false);
+    }
+
+    function getRandomQuote() {
+      const quotes = appState.customQuotes && appState.customQuotes.length > 0 ? appState.customQuotes : DEFAULT_QUOTES;
+      const today = getTodayDate();
+      let hash = 0;
+      for (let i = 0; i < today.length; i++) {
+        hash = (hash << 5) - hash + today.charCodeAt(i);
+        hash |= 0;
+      }
+      const idx = Math.abs(hash) % quotes.length;
+      return quotes[idx];
+    }
+    function updateRevisionStates() {
+      const today = getTodayDate();
+      let stateChanged = false;
+
+      appState.papers.forEach((paper) => {
+        paper.chapters.forEach((ch) => {
+          if (ch.status === "Studied" && ch.revisionDueDate) {
+            if (ch.revisionDueDate < today) {
+              const overdueDays = daysBetween(ch.revisionDueDate, today);
+              if (overdueDays > 7) {
+                // Missed revision by > 7 days -> Reset back 1 stage!
+                const currentStage = ch.revisionStage || 1;
+                const newStage = Math.max(1, currentStage - 1);
+                ch.revisionStage = newStage;
+                ch.revisionDueDate = today; // Reset due date to today
+                stateChanged = true;
+              }
+            }
+          }
+        });
+      });
+
+      if (stateChanged) {
+        saveState(false);
+      }
+    }
+
+    // --- PHASE 4: GAMIFICATION ENGINE ---
+    const BADGES_DEF = [
+      { id: "first_studied", name: "First Step", icon: "🌟", hint: "Mark your first chapter as Studied" },
+      { id: "mastery_unlocked", name: "Mastery Unlocked", icon: "🏆", hint: "Complete all 5 revision stages for a chapter" },
+      { id: "week_warrior", name: "Week Warrior", icon: "🔥", hint: "Maintain a 7-day completion streak" },
+      { id: "consistency_master", name: "Consistency Master", icon: "⚡", hint: "Maintain a 30-day completion streak" },
+      { id: "subject_mastery", name: "Subject Master", icon: "👑", hint: "Reach 100% Mastered status for any full paper" }
+    ];
+
+    function getLevelInfo(xp) {
+      const levelNum = Math.floor((xp || 0) / 500) + 1;
+      const xpInLevel = (xp || 0) % 500;
+      const titles = [
+        "Foundation Aspirant",
+        "Article Assistant",
+        "Intermediate Scholar",
+        "Audit Analyst",
+        "Semi-Qualified CA",
+        "Revision Specialist",
+        "Command Master",
+        "CA Rank Holder"
+      ];
+      const titleIndex = Math.min(levelNum - 1, titles.length - 1);
+      const title = titles[titleIndex];
+      return { levelNum, xpInLevel, title };
+    }
+
+    function showXPToast(text) {
+      const toast = document.getElementById("xp-toast");
+      if (toast) {
+        toast.innerText = text;
+        toast.classList.add("show");
+        clearTimeout(window._xpToastTimer);
+        window._xpToastTimer = setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2200);
+      }
+    }
+
+    function awardXP(amount, reason, taskMeta) {
+      appState.totalXP = (appState.totalXP || 0) + amount;
+      const today = getTodayDate();
+      if (!appState.completedDates) appState.completedDates = {};
+      appState.completedDates[today] = (appState.completedDates[today] || 0) + 1;
+      appState.lastCompletionDate = today;
+
+      if (!appState.completionHistory) appState.completionHistory = [];
+      appState.completionHistory.push({
+        date: today,
+        title: reason || "Task Completed",
+        type: taskMeta?.type || "Study/Revision",
+        timestamp: Date.now()
+      });
+
+      updateStreakState();
+      checkBadgeUnlocks();
+
+      showXPToast(`+${amount} XP ${reason ? '• ' + reason : ''} ⚡`);
+
+      checkDailyClearBonus();
+
+      saveState(false);
+      renderHeaderGamifyBar();
+    }
+
+    function checkDailyClearBonus() {
+      const today = getTodayDate();
+      if (appState.dailyClearBonusAwarded && appState.dailyClearBonusAwarded[today]) {
+        return;
+      }
+
+      let remainingActive = 0;
+      appState.papers.forEach((paper) => {
+        paper.chapters.forEach((ch) => {
+          if (ch.status === "Studied" && ch.revisionDueDate && ch.revisionDueDate <= today) {
+            remainingActive++;
+          } else if (ch.status === "In Progress") {
+            remainingActive++;
+          }
+        });
+      });
+
+      if (remainingActive === 0 && (appState.completedDates[today] || 0) > 0) {
+        if (!appState.dailyClearBonusAwarded) appState.dailyClearBonusAwarded = {};
+        appState.dailyClearBonusAwarded[today] = true;
+        appState.totalXP += 25;
+        setTimeout(() => {
+          showXPToast(`+25 XP Bonus • All Tasks Cleared! 🎉`);
+        }, 1500);
+      }
+    }
+
+    function updateStreakState() {
+      const today = getTodayDate();
+      if (!appState.completedDates) appState.completedDates = {};
+
+      let streak = 0;
+      let checkDateStr = today;
+
+      if (!appState.completedDates[today]) {
+        checkDateStr = addDaysToDate(today, -1);
+      }
+
+      while (appState.completedDates[checkDateStr] && appState.completedDates[checkDateStr] > 0) {
+        streak++;
+        checkDateStr = addDaysToDate(checkDateStr, -1);
+      }
+
+      appState.currentStreak = streak;
+    }
+
+    function checkBadgeUnlocks() {
+      if (!appState.unlockedBadges) appState.unlockedBadges = [];
+      let newlyUnlocked = false;
+
+      let studiedCount = 0;
+      let masteredCount = 0;
+      appState.papers.forEach((p) => {
+        p.chapters.forEach((ch) => {
+          if (ch.status === "Studied" || ch.status === "Mastered") studiedCount++;
+          if (ch.status === "Mastered") masteredCount++;
+        });
+      });
+
+      if (studiedCount > 0 && !appState.unlockedBadges.includes("first_studied")) {
+        appState.unlockedBadges.push("first_studied");
+        newlyUnlocked = true;
+      }
+
+      if (masteredCount > 0 && !appState.unlockedBadges.includes("mastery_unlocked")) {
+        appState.unlockedBadges.push("mastery_unlocked");
+        newlyUnlocked = true;
+      }
+
+      if ((appState.currentStreak || 0) >= 7 && !appState.unlockedBadges.includes("week_warrior")) {
+        appState.unlockedBadges.push("week_warrior");
+        newlyUnlocked = true;
+      }
+
+      if ((appState.currentStreak || 0) >= 30 && !appState.unlockedBadges.includes("consistency_master")) {
+        appState.unlockedBadges.push("consistency_master");
+        newlyUnlocked = true;
+      }
+
+      let subjectMastered = false;
+      appState.papers.forEach((p) => {
+        if (p.chapters.length > 0 && p.chapters.every((c) => c.status === "Mastered")) {
+          subjectMastered = true;
+        }
+      });
+      if (subjectMastered && !appState.unlockedBadges.includes("subject_mastery")) {
+        appState.unlockedBadges.push("subject_mastery");
+        newlyUnlocked = true;
+      }
+
+      if (newlyUnlocked) {
+        saveState(false);
+      }
+    }
+
+    function renderHeaderGamifyBar() {
+      const bar = document.getElementById("header-gamify-bar");
+      if (!bar) return;
+      const lvl = getLevelInfo(appState.totalXP || 0);
+      const streak = appState.currentStreak || 0;
+      bar.innerHTML = `
+        <span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border-color:rgba(245,158,11,0.4)">🔥 ${streak}d</span>
+        <span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc; border-color:rgba(99,102,241,0.4)">⚡ Lvl ${lvl.levelNum}</span>
+      `;
+    }
+
+    // --- NAVIGATION ---
+    function switchTab(tab) {
+      appState.activeTab = tab;
+      document.querySelectorAll(".nav-item").forEach((el) => el.classList.remove("active"));
+      document.getElementById(`nav-${tab}`).classList.add("active");
+      render();
+    }
+
+    // --- RENDER ROUTER ---
+    function render() {
+      applyTheme(appState.selectedTheme || "indigo");
+      updateRevisionStates();
+      updateStreakState();
+      checkBadgeUnlocks();
+      renderHeaderGamifyBar();
+      renderHeaderCountdown();
+      updateNavBadges();
+
+      const main = document.getElementById("main-content");
+      if (appState.activeTab === "dashboard") {
+        renderDashboard(main);
+      } else if (appState.activeTab === "today") {
+        renderToday(main);
+      } else if (appState.activeTab === "backlog") {
+        renderBacklog(main);
+      } else if (appState.activeTab === "calendar") {
+        renderCalendar(main);
+      } else if (appState.activeTab === "progress") {
+        renderProgress(main);
+      } else if (appState.activeTab === "tests") {
+        renderTests(main);
+      } else if (appState.activeTab === "rewards") {
+        renderRewards(main);
+      } else if (appState.activeTab === "settings") {
+        renderSettings(main);
+      }
+    }
+
+    // --- PHASE 5: EXAM COUNTDOWN & MODAL ---
+    function getDaysUntilExam() {
+      const today = getTodayDate();
+      const examStr = appState.examDate || "2027-05-27";
+      const days = daysBetween(today, examStr);
+      return Math.max(0, days);
+    }
+
+    function renderHeaderCountdown() {
+      const textEl = document.getElementById("header-countdown-text");
+      if (textEl) {
+        const days = getDaysUntilExam();
+        textEl.innerText = `${days} Days Left`;
+      }
+    }
+
+    function updateNavBadges() {
+      const today = getTodayDate();
+      let count3Plus = 0;
+      appState.papers.forEach((paper) => {
+        paper.chapters.forEach((ch) => {
+          if (ch.status === "Studied" && ch.revisionDueDate && ch.revisionDueDate < today) {
+            const overdueDays = daysBetween(ch.revisionDueDate, today);
+            if (overdueDays >= 3) count3Plus++;
+          }
+        });
+      });
+
+      const badgeEl = document.getElementById("nav-today-badge");
+      if (badgeEl) {
+        if (count3Plus > 0) {
+          badgeEl.innerText = count3Plus;
+          badgeEl.style.display = "inline-block";
+        } else {
+          badgeEl.style.display = "none";
+        }
+      }
+    }
+
+    function openExamModal() {
+      const days = getDaysUntilExam();
+      const weeks = (days / 7).toFixed(1);
+      const budget = appState.dailyCapacityHours || 4.0;
+      const hoursRemaining = (days * budget).toFixed(1);
+      const examStr = appState.examDate || "2027-05-27";
+
+      const body = document.getElementById("exam-modal-body");
+      if (body) {
+        body.innerHTML = `
+          <div class="rewards-hero" style="background: linear-gradient(145deg, #1e1b4b, #311b92); margin-bottom:16px;">
+            <div style="font-size:12px; color:#a5b4fc;">CA Intermediate Exam Date</div>
+            <div style="font-size:24px; font-weight:800; color:#fff; margin-top:2px;">🚩 ${examStr}</div>
+            <div style="font-size:14px; font-weight:700; color:#fbbf24; margin-top:8px;">⏳ ${days} Days Remaining</div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-bottom:16px;">
+            <div class="capacity-card" style="flex:1; margin-bottom:0;">
+              <div style="font-size:11px; color:var(--text-muted);">Weeks Remaining</div>
+              <div style="font-size:20px; font-weight:800; color:#a5b4fc; margin-top:4px;">${weeks} <span style="font-size:13px;">weeks</span></div>
+            </div>
+            <div class="capacity-card" style="flex:1; margin-bottom:0;">
+              <div style="font-size:11px; color:var(--text-muted);">Study Budget Hours Left</div>
+              <div style="font-size:20px; font-weight:800; color:#34d399; margin-top:4px;">${hoursRemaining} <span style="font-size:13px;">hrs</span></div>
+            </div>
+          </div>
+
+          <p style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+            Hours calculated based on your daily budget of <strong>${budget} hrs/day</strong>. You can customize the exam date anytime in Settings.
+          </p>
+        `;
+      }
+      document.getElementById("exam-modal").classList.add("active");
+    }
+
+    function closeExamModal() {
+      document.getElementById("exam-modal").classList.remove("active");
+    }
+
+    // --- PHASE 5: PACE CALCULATOR & CALENDAR TAB ---
+    function getPaceRecommendation() {
+      const daysLeft = getDaysUntilExam();
+      const weeksLeft = daysLeft / 7;
+      const effectiveWeeks = Math.max(1, weeksLeft - 3);
+
+      let unmastered = 0;
+      appState.papers.forEach((p) => {
+        p.chapters.forEach((ch) => {
+          if (ch.status !== "Mastered") unmastered++;
+        });
+      });
+
+      const pacePerWeek = (unmastered / effectiveWeeks).toFixed(1);
+      return { unmastered, weeksLeft: weeksLeft.toFixed(1), effectiveWeeks: effectiveWeeks.toFixed(1), pacePerWeek };
+    }
+
+    function renderCalendar(container) {
+      const today = getTodayDate();
+      const todayDateObj = new Date(today + "T00:00:00");
+      const offsetMonths = appState.calendarMonthOffset || 0;
+
+      const viewDate = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth() + offsetMonths, 1);
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const monthTitle = `${monthNames[month]} ${year}`;
+
+      const firstDayIdx = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const pace = getPaceRecommendation();
+      const examDateStr = appState.examDate || "2027-05-27";
+
+      let html = `
+        <div class="capacity-card" style="border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.05); margin-bottom:16px;">
+          <div style="font-size:12px; font-weight:700; color:#a5b4fc; margin-bottom:4px;">📊 Recommended Target Pace</div>
+          <div style="font-size:14px; font-weight:600; color:#fff; line-height:1.4;">
+            Target pace: ~<strong>${pace.pacePerWeek} chapters per week</strong> to reach 100% Mastery before the 3-week final revision buffer (${pace.unmastered} unmastered chapters across ${pace.effectiveWeeks} effective weeks).
+          </div>
+        </div>
+
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <button class="btn-icon" onclick="changeCalendarMonth(-1)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <div class="calendar-header-title">${monthTitle}</div>
+            <button class="btn-icon" onclick="changeCalendarMonth(1)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+
+          <div class="calendar-grid">
+            <div class="calendar-day-label">Sun</div>
+            <div class="calendar-day-label">Mon</div>
+            <div class="calendar-day-label">Tue</div>
+            <div class="calendar-day-label">Wed</div>
+            <div class="calendar-day-label">Thu</div>
+            <div class="calendar-day-label">Fri</div>
+            <div class="calendar-day-label">Sat</div>
+      `;
+
+      for (let i = 0; i < firstDayIdx; i++) {
+        html += `<div class="calendar-cell other-month"></div>`;
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const mStr = String(month + 1).padStart(2, '0');
+        const dStr = String(day).padStart(2, '0');
+        const dateStr = `${year}-${mStr}-${dStr}`;
+
+        const isTodayCell = dateStr === today;
+        const isExamCell = dateStr === examDateStr;
+        const hasCompletions = (appState.completedDates[dateStr] || 0) > 0;
+
+        let cellClasses = `calendar-cell ${isTodayCell ? 'is-today' : ''} ${isExamCell ? 'is-exam' : ''}`;
+
+        html += `
+          <div class="${cellClasses}" onclick="openDateDetailModal('${dateStr}')">
+            <span>${day}</span>
+            ${isExamCell ? `<span class="cal-exam-flag">🚩</span>` : ''}
+            ${hasCompletions ? `<span class="cal-dot"></span>` : ''}
+          </div>
+        `;
+      }
+
+      html += `</div></div>`;
+      container.innerHTML = html;
+    }
+
+    function changeCalendarMonth(delta) {
+      appState.calendarMonthOffset = (appState.calendarMonthOffset || 0) + delta;
+      render();
+    }
+
+    function openDateDetailModal(dateStr) {
+      const today = getTodayDate();
+      const isPastOrToday = dateStr <= today;
+
+      document.getElementById("date-detail-title").innerText = `${isPastOrToday ? 'Completed Items on' : 'Scheduled Tasks for'} ${dateStr}`;
+
+      let html = "";
+      if (isPastOrToday) {
+        const historyItems = (appState.completionHistory || []).filter((h) => h.date === dateStr);
+        const count = appState.completedDates[dateStr] || 0;
+
+        if (historyItems.length === 0 && count === 0) {
+          html = `
+            <div class="today-empty">
+              <div class="today-empty-icon">📅</div>
+              <div class="today-empty-title">No Completions Logged</div>
+              <div class="today-empty-text">No study or revision tasks were marked done on ${dateStr}.</div>
+            </div>
+          `;
+        } else if (historyItems.length === 0) {
+          html = `
+            <div class="settings-group">
+              <div style="font-size:14px; font-weight:700; color:#34d399;">✓ ${count} Task(s) Completed</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Recorded on ${dateStr}.</div>
+            </div>
+          `;
+        } else {
+          historyItems.forEach((item) => {
+            html += `
+              <div class="today-item-card" style="margin-bottom:8px;">
+                <div>
+                  <span class="badge badge-studied">${item.type || 'Task'}</span>
+                  <div class="chapter-title" style="margin-top:4px; font-size:14px">${item.title}</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Completed on ${item.date}</div>
+                </div>
+              </div>
+            `;
+          });
+        }
+      } else {
+        let scheduledList = [];
+        appState.papers.forEach((paper) => {
+          paper.chapters.forEach((ch) => {
+            if (ch.status === "Studied" && ch.revisionDueDate === dateStr) {
+              scheduledList.push({ paperCode: paper.code, title: ch.title, stage: ch.revisionStage || 1 });
+            }
+          });
+        });
+
+        if (scheduledList.length === 0) {
+          html = `
+            <div class="today-empty">
+              <div class="today-empty-icon">📅</div>
+              <div class="today-empty-title">No Revisions Scheduled</div>
+              <div class="today-empty-text">No spaced revisions are currently due on ${dateStr}.</div>
+            </div>
+          `;
+        } else {
+          scheduledList.forEach((item) => {
+            html += `
+              <div class="today-item-card studied" style="margin-bottom:8px;">
+                <div>
+                  <span class="paper-code">${item.paperCode}</span>
+                  <div class="chapter-title" style="margin-top:4px; font-size:14px">${item.title}</div>
+                  <div style="font-size:11px; color:#34d399; margin-top:2px;">Stage ${item.stage} Revision Scheduled</div>
+                </div>
+              </div>
+            `;
+          });
+        }
+      }
+
+      document.getElementById("date-detail-body").innerHTML = html;
+      document.getElementById("date-detail-modal").classList.add("active");
+    }
+
+    function closeDateDetailModal() {
+      document.getElementById("date-detail-modal").classList.remove("active");
+    }
+
+    // --- PHASE 5: PROGRESS & TRENDS SCREEN ---
+    function renderProgress(container) {
+      let totalCh = 0;
+      let masteredCh = 0;
+      let studiedCh = 0;
+      let inProgressCh = 0;
+
+      appState.papers.forEach((p) => {
+        p.chapters.forEach((c) => {
+          totalCh++;
+          if (c.status === "Mastered") masteredCh++;
+          else if (c.status === "Studied") studiedCh++;
+          else if (c.status === "In Progress") inProgressCh++;
+        });
+      });
+
+      const overallPct = totalCh > 0 ? Math.round((masteredCh / totalCh) * 100) : 0;
+      const daysLeft = getDaysUntilExam();
+
+      let html = `
+        <div class="rewards-hero" style="background: linear-gradient(145deg, #064e3b, #111827); border-color:#059669;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="hero-stat-label" style="color:#6ee7b7">Syllabus Mastery</div>
+              <div class="hero-stat-value" style="color:#fff">${overallPct}% <span style="font-size:18px;">Mastered</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div class="hero-stat-label" style="color:#6ee7b7">Exam Countdown</div>
+              <div class="hero-stat-value" style="color:#fbbf24">⏳ ${daysLeft} <span style="font-size:18px;">Days Left</span></div>
+            </div>
+          </div>
+          <div class="progress-bar-track" style="margin-top:16px; margin-bottom:0; height:10px;">
+            <div class="progress-segment mastered" style="width: ${overallPct}%"></div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <span>90-Day Activity Heatmap</span>
+        </div>
+
+        <div class="calendar-container">
+          <div style="font-size:12px; color:var(--text-muted);">Daily study & revision completion intensity over the last 90 days</div>
+          <div class="heatmap-grid">
+      `;
+
+      const todayStr = getTodayDate();
+      for (let i = 89; i >= 0; i--) {
+        const dStr = addDaysToDate(todayStr, -i);
+        const count = (appState.completedDates && appState.completedDates[dStr]) || 0;
+        let levelClass = "";
+        if (count === 1) levelClass = "level-1";
+        else if (count === 2) levelClass = "level-2";
+        else if (count === 3) levelClass = "level-3";
+        else if (count >= 4) levelClass = "level-4";
+
+        html += `<div class="heatmap-cell ${levelClass}" title="${dStr}: ${count} completions"></div>`;
+      }
+
+      html += `
+          </div>
+        </div>
+      `;
+
+      // MONTHLY PROGRESS SUMMARY STATS (LAST 30 DAYS BY 4 WEEKS)
+      let weekCompletions = [0, 0, 0, 0];
+      let monthTotalActiveDays = 0;
+      let monthTotalCompletions = 0;
+
+      for (let i = 29; i >= 0; i--) {
+        const dStr = addDaysToDate(todayStr, -i);
+        const count = (appState.completedDates && appState.completedDates[dStr]) || 0;
+        if (count > 0) {
+          monthTotalActiveDays++;
+          monthTotalCompletions += count;
+        }
+        const weekIdx = Math.min(3, Math.floor((29 - i) / 7.5));
+        weekCompletions[weekIdx] += count;
+      }
+
+      const maxWeekCount = Math.max(1, ...weekCompletions);
+
+      html += `
+        <div class="section-title" style="margin-top:24px;">
+          <span>Monthly Progress Summary (4-Week Trend)</span>
+        </div>
+
+        <div class="capacity-card" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:11px; color:var(--text-muted);">Active Study Days This Month</div>
+              <div style="font-size:20px; font-weight:800; color:#34d399;">${monthTotalActiveDays} / 30 Days</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text-muted);">Total Monthly Completions</div>
+              <div style="font-size:20px; font-weight:800; color:#a5b4fc;">${monthTotalCompletions} Tasks</div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:flex-end; gap:12px; height:100px; padding-top:10px; border-bottom:1px solid var(--border-color); margin-bottom:8px;">
+            ${weekCompletions.map((val, idx) => {
+              const barPct = Math.round((val / maxWeekCount) * 100);
+              return `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end;">
+                  <div style="font-size:10px; color:#a5b4fc; margin-bottom:4px; font-weight:700;">${val}</div>
+                  <div style="width:100%; background:linear-gradient(180deg, #6366f1, #312e81); border-radius:4px 4px 0 0; height:${Math.max(8, barPct)}%;"></div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted);">
+            <span style="flex:1; text-align:center;">W1 (Days 1-7)</span>
+            <span style="flex:1; text-align:center;">W2 (Days 8-14)</span>
+            <span style="flex:1; text-align:center;">W3 (Days 15-21)</span>
+            <span style="flex:1; text-align:center;">W4 (Days 22-30)</span>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:24px;">
+          <span>Subject Mastery Progress</span>
+        </div>
+      `;
+
+      appState.papers.forEach((paper) => {
+        const pTotal = paper.chapters.length;
+        const pMastered = paper.chapters.filter((c) => c.status === "Mastered").length;
+        const pStudied = paper.chapters.filter((c) => c.status === "Studied").length;
+        const pInProgress = paper.chapters.filter((c) => c.status === "In Progress").length;
+
+        const pMasteredPct = pTotal > 0 ? (pMastered / pTotal) * 100 : 0;
+        const pStudiedPct = pTotal > 0 ? (pStudied / pTotal) * 100 : 0;
+        const pInProgressPct = pTotal > 0 ? (pInProgress / pTotal) * 100 : 0;
+        const pOverallPct = Math.round(pMasteredPct);
+
+        html += `
+          <div class="capacity-card" style="margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div>
+                <span class="paper-code">${paper.code}</span>
+                <span style="font-size:13px; font-weight:700; color:#fff; margin-left:6px;">${paper.title}</span>
+              </div>
+              <div style="font-size:14px; font-weight:800; color:#c084fc;">${pOverallPct}%</div>
+            </div>
+
+            <div class="progress-bar-track" style="margin-bottom:8px; height:8px;">
+              <div class="progress-segment mastered" style="width: ${pMasteredPct}%"></div>
+              <div class="progress-segment studied" style="width: ${pStudiedPct}%"></div>
+              <div class="progress-segment in-progress" style="width: ${pInProgressPct}%"></div>
+            </div>
+
+            <div class="subject-meta" style="font-size:11px;">
+              <span>🏆 ${pMastered} Mastered</span>
+              <span>📖 ${pStudied} Studied</span>
+              <span>⏳ ${pInProgress} In Progress</span>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function saveExamDateSetting(val) {
+      if (val) {
+        appState.examDate = val;
+        saveState();
+        render();
+      }
+    }
+
+    // --- DASHBOARD RENDER ---
+    function renderDashboard(container) {
+      // Calculate overall stats
+      let totalChapters = 0;
+      let countNotStarted = 0;
+      let countInProgress = 0;
+      let countStudied = 0;
+      let countMastered = 0;
+
+      appState.papers.forEach((p) => {
+        p.chapters.forEach((ch) => {
+          totalChapters++;
+          if (ch.status === "In Progress") countInProgress++;
+          else if (ch.status === "Studied") countStudied++;
+          else if (ch.status === "Mastered") countMastered++;
+          else countNotStarted++;
+        });
+      });
+
+      const completedCount = countStudied + countMastered;
+      const overallPercent = totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
+      const masteredPercent = totalChapters > 0 ? ((countMastered / totalChapters) * 100).toFixed(1) : 0;
+      const studiedPercent = totalChapters > 0 ? ((countStudied / totalChapters) * 100).toFixed(1) : 0;
+      const inProgressPercent = totalChapters > 0 ? ((countInProgress / totalChapters) * 100).toFixed(1) : 0;
+
+      let html = `
+        <div class="hero-card">
+          <div class="hero-top">
+            <div>
+              <div class="hero-stat-label">Overall Completion</div>
+              <div class="hero-stat-value">${overallPercent}%</div>
+            </div>
+            <div class="hero-stat-subtext">${completedCount} of ${totalChapters} Chapters Done</div>
+          </div>
+          
+          <div class="progress-bar-track">
+            <div class="progress-segment mastered" style="width: ${masteredPercent}%"></div>
+            <div class="progress-segment studied" style="width: ${studiedPercent}%"></div>
+            <div class="progress-segment in-progress" style="width: ${inProgressPercent}%"></div>
+          </div>
+
+          <div class="status-summary-grid">
+            <div class="summary-item">
+              <div class="summary-count" style="color:#9ca3af">${countNotStarted}</div>
+              <div class="summary-label">Not Started</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-count" style="color:#fbbf24">${countInProgress}</div>
+              <div class="summary-label">In Progress</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-count" style="color:#34d399">${countStudied}</div>
+              <div class="summary-label">Studied</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-count" style="color:#c084fc">${countMastered}</div>
+              <div class="summary-label">Mastered</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <span>Subjects Tracker</span>
+          <span style="font-size:12px; color:var(--text-muted)">6 Papers</span>
+        </div>
+
+        <div class="subject-cards-grid">
+      `;
+
+      appState.papers.forEach((paper) => {
+        let pTotal = paper.chapters.length;
+        let pDone = 0;
+        let pMastered = 0;
+        let pStudied = 0;
+        let pInProgress = 0;
+
+        paper.chapters.forEach((ch) => {
+          if (ch.status === "Mastered") { pDone++; pMastered++; }
+          else if (ch.status === "Studied") { pDone++; pStudied++; }
+          else if (ch.status === "In Progress") { pInProgress++; }
+        });
+
+        let pPercent = pTotal > 0 ? Math.round((pDone / pTotal) * 100) : 0;
+        let pMasteredPct = pTotal > 0 ? (pMastered / pTotal) * 100 : 0;
+        let pStudiedPct = pTotal > 0 ? (pStudied / pTotal) * 100 : 0;
+        let pInProgressPct = pTotal > 0 ? (pInProgress / pTotal) * 100 : 0;
+
+        html += `
+          <div class="subject-card" onclick="openSubjectModal('${paper.id}')">
+            <div class="subject-card-header">
+              <div>
+                <span class="paper-code">${paper.code}</span>
+                <div class="paper-title">${paper.title}</div>
+              </div>
+              <div class="subject-percentage">${pPercent}%</div>
+            </div>
+
+            <div class="progress-bar-track" style="margin-bottom:8px; height:6px;">
+              <div class="progress-segment mastered" style="width: ${pMasteredPct}%"></div>
+              <div class="progress-segment studied" style="width: ${pStudiedPct}%"></div>
+              <div class="progress-segment in-progress" style="width: ${pInProgressPct}%"></div>
+            </div>
+
+            <div class="subject-meta">
+              <span>${pDone}/${pTotal} Completed</span>
+              <span>${pInProgress} In Progress &rarr;</span>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    // --- CAPACITY CALCULATION ---
+    function calculateTodayCapacity() {
+      const today = getTodayDate();
+      let totalPlannedHours = 0;
+
+      appState.papers.forEach((paper) => {
+        paper.chapters.forEach((ch) => {
+          if (ch.status === "Studied" && ch.revisionDueDate) {
+            if (ch.revisionDueDate <= today) {
+              totalPlannedHours += (25 / 60); // 25 min for revision = 0.42 hrs
+            }
+          } else if (ch.status === "In Progress") {
+            totalPlannedHours += (50 / 60); // 50 min for new topic = 0.83 hrs
+          }
+        });
+      });
+
+      const budget = appState.dailyCapacityHours || 4.0;
+      const pct = Math.min(100, Math.round((totalPlannedHours / budget) * 100));
+      return {
+        plannedHours: parseFloat(totalPlannedHours.toFixed(1)),
+        budgetHours: parseFloat(budget.toFixed(1)),
+        percentage: pct
+      };
+    }
+
+    // --- TODAY RENDER ---
+    function renderToday(container) {
+      const today = getTodayDate();
+      const realToday = new Date().toISOString().split("T")[0];
+      const isSimulated = appState.simulatedDaysOffset !== 0;
+      const cap = calculateTodayCapacity();
+
+      let barColor = "#34d399";
+      if (cap.plannedHours > cap.budgetHours) {
+        barColor = cap.plannedHours > cap.budgetHours * 1.2 ? "#f43f5e" : "#fbbf24";
+      }
+
+      let html = `
+        <div style="font-size:12px; font-style:italic; color:var(--text-muted); margin-bottom:14px; text-align:center; padding:0 8px;">
+          "${getRandomQuote()}"
+        </div>
+
+        <!-- DAILY CAPACITY CARD -->
+        <div class="capacity-card">
+          <div class="capacity-header">
+            <span class="capacity-title">⚡ Daily Capacity Budget</span>
+            <span class="capacity-value" style="color: ${barColor}">${cap.plannedHours} / ${cap.budgetHours} hrs planned</span>
+          </div>
+          <div class="progress-bar-track" style="margin-bottom:0; height:8px;">
+            <div class="progress-segment" style="width: ${cap.percentage}%; background-color: ${barColor}"></div>
+          </div>
+        </div>
+      `;
+
+      if (isSimulated) {
+        html += `
+          <div class="sim-bar">
+            <span>🧪 Simulation Mode: <strong>${today}</strong> (+${appState.simulatedDaysOffset}d from real ${realToday})</span>
+            <button style="background:none; border:none; color:#fbbf24; cursor:pointer; text-decoration:underline; font-weight:700" onclick="setSimulatedOffset(0)">Reset Date</button>
+          </div>
+        `;
+      }
+
+      // VIEW TOGGLE BAR
+      html += `
+        <div class="view-toggle-bar">
+          <button class="toggle-option ${appState.todayViewMode === 'list' ? 'active' : ''}" onclick="switchTodayViewMode('list')">📋 List View</button>
+          <button class="toggle-option ${appState.todayViewMode === 'schedule' ? 'active' : ''}" onclick="switchTodayViewMode('schedule')">⏰ Schedule View</button>
+        </div>
+      `;
+
+      html += `<div id="today-view-content"></div>`;
+      container.innerHTML = html;
+
+      const subContainer = document.getElementById("today-view-content");
+      if (appState.todayViewMode === "schedule") {
+        renderTodaySchedule(subContainer);
+      } else {
+        renderTodayList(subContainer);
+      }
+    }
+
+    function switchTodayViewMode(mode) {
+      appState.todayViewMode = mode;
+      saveState(false);
+      render();
+    }
+
+    // --- TODAY LIST VIEW ---
+    function renderTodayList(container) {
+      const today = getTodayDate();
+      let overdueList = [];
+      let dueTodayList = [];
+      let inProgressList = [];
+
+      appState.papers.forEach((paper) => {
+        paper.chapters.forEach((ch) => {
+          if (ch.status === "Studied" && ch.revisionDueDate) {
+            if (ch.revisionDueDate < today) {
+              const overdueDays = daysBetween(ch.revisionDueDate, today);
+              overdueList.push({
+                paperCode: paper.code,
+                paperTitle: paper.title,
+                paperId: paper.id,
+                chapter: ch,
+                overdueDays: overdueDays
+              });
+            } else if (ch.revisionDueDate === today) {
+              dueTodayList.push({
+                paperCode: paper.code,
+                paperTitle: paper.title,
+                paperId: paper.id,
+                chapter: ch
+              });
+            }
+          } else if (ch.status === "In Progress") {
+            inProgressList.push({
+              paperCode: paper.code,
+              paperTitle: paper.title,
+              paperId: paper.id,
+              chapter: ch
+            });
+          }
+        });
+      });
+
+      // Day 5+ items auto-pinned to top (sorted descending by overdueDays)
+      overdueList.sort((a, b) => b.overdueDays - a.overdueDays);
+      let html = "";
+
+      // SUNDAY NUDGE
+      const todayDateObj = new Date(today + "T00:00:00");
+      if (todayDateObj.getDay() === 0) {
+        html += `
+          <div class="capacity-card" style="border-color:rgba(168,85,247,0.4); background:rgba(168,85,247,0.08); margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:13px; font-weight:700; color:#c084fc;">📝 Sunday Online Test Day</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Did you write a test today? Log your score to update weak topic priorities.</div>
+              </div>
+              <button class="btn-primary" style="width:auto; padding:8px 14px;" onclick="openLogTestModal()">+ Log Sunday Test</button>
+            </div>
+          </div>
+        `;
+      }
+
+      // WEAK TOPICS SECTION (< 60% Test Score)
+      let weakTopicsList = [];
+      appState.papers.forEach((paper) => {
+        paper.chapters.forEach((ch) => {
+          if (ch.isWeakTopic) {
+            weakTopicsList.push({ paperId: paper.id, paperCode: paper.code, paperTitle: paper.title, chapter: ch });
+          }
+        });
+      });
+
+      if (weakTopicsList.length > 0) {
+        html += `
+          <div class="today-section-title" style="color: #f43f5e;">
+            <span>⚡ Weak Topics Requiring Focus (< 60% Test Score)</span>
+            <span class="badge" style="background:rgba(244,63,94,0.2); color:#f43f5e; border-color:rgba(244,63,94,0.4)">Priority Focus</span>
+          </div>
+        `;
+        weakTopicsList.forEach((item) => {
+          html += `
+            <div class="today-item-card overdue" style="border-left-color:#f43f5e; margin-bottom:10px;">
+              <div>
+                <span class="paper-code" style="background:rgba(244,63,94,0.15); color:#f43f5e;">${item.paperCode} • ${item.paperTitle}</span>
+                <div class="chapter-title" style="margin-top:4px; font-size:15px">${item.chapter.title}</div>
+                <div style="font-size:11px; color:#f43f5e; font-weight:700; margin-top:2px;">
+                  ⚠️ Scored ${item.chapter.lastTestScore || 0}% on Test (${item.chapter.weakTopicDate || 'Recent Test'})
+                </div>
+              </div>
+              <button class="btn-action-success" style="width:auto; padding:8px 12px; flex-shrink:0;" onclick="markTodayStudied('${item.paperId}', '${item.chapter.id}')">
+                Mark Studied
+              </button>
+            </div>
+          `;
+        });
+      }
+
+      const totalActiveTasks = overdueList.length + dueTodayList.length + inProgressList.length;
+
+      if (totalActiveTasks === 0 && weakTopicsList.length === 0) {
+        html += `
+          <div class="today-empty">
+            <div class="today-empty-icon">🎯</div>
+            <div class="today-empty-title">All Caught Up for Today!</div>
+            <div class="today-empty-text">No overdue revisions, no revisions due today, and no chapters in progress. Select chapters from your Dashboard or Backlog to begin studying.</div>
+          </div>
+        `;
+      } else {
+        // 1. OVERDUE REVISIONS (PINNED TOP & TASK AGING STYLES)
+        if (overdueList.length > 0) {
+          html += `
+            <div class="today-section-title" style="color: #f43f5e;">
+              <span>🚨 Overdue Revisions (${overdueList.length})</span>
+              <span class="badge badge-overdue">Action Required</span>
+            </div>
+          `;
+          overdueList.forEach((item) => {
+            const ch = item.chapter;
+            const stage = ch.revisionStage || 1;
+            const days = item.overdueDays;
+
+            let cardClass = "today-item-card overdue";
+            let badgeClass = "badge badge-overdue";
+            let warningIcon = "";
+
+            if (days === 2) {
+              cardClass += " aging-amber";
+            } else if (days >= 3) {
+              cardClass += " aging-red";
+              badgeClass += " pulsing-badge";
+              warningIcon = "⚠️ ";
+            }
+
+            html += `
+              <div class="${cardClass}">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <div>
+                    <span class="paper-code" style="background:rgba(244,63,94,0.15); color:#f43f5e;">${item.paperCode} • ${item.paperTitle}</span>
+                    <div class="chapter-title" style="margin-top:4px; font-size:15px">${ch.title}</div>
+                  </div>
+                  <span class="${badgeClass}">${warningIcon}${days}d</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--text-muted); margin-top:2px;">
+                  <span>Stage ${stage} of 5</span>
+                  <span>Due: ${ch.revisionDueDate}</span>
+                </div>
+                <button class="btn-action-revision" style="background:rgba(244,63,94,0.2); color:#f43f5e; border-color:#9f1239;" onclick="completeRevision('${item.paperId}', '${ch.id}')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Complete Stage ${stage} Revision
+                </button>
+              </div>
+            `;
+          });
+        }
+
+        // 2. REVISIONS DUE TODAY
+        if (dueTodayList.length > 0) {
+          html += `
+            <div class="today-section-title" style="color: #6366f1;">
+              <span>📅 Revisions Due Today (${dueTodayList.length})</span>
+              <span class="badge badge-due-today">Spaced Schedule</span>
+            </div>
+          `;
+          dueTodayList.forEach((item) => {
+            const ch = item.chapter;
+            const stage = ch.revisionStage || 1;
+            html += `
+              <div class="today-item-card due-today">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <div>
+                    <span class="paper-code">${item.paperCode} • ${item.paperTitle}</span>
+                    <div class="chapter-title" style="margin-top:4px; font-size:15px">${ch.title}</div>
+                  </div>
+                  <span class="badge badge-stage">Stage ${stage}/5</span>
+                </div>
+                <button class="btn-action-revision" onclick="completeRevision('${item.paperId}', '${ch.id}')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Complete Stage ${stage} Revision
+                </button>
+              </div>
+            `;
+          });
+        }
+
+        // 3. CHAPTERS IN PROGRESS
+        if (inProgressList.length > 0) {
+          html += `
+            <div class="today-section-title" style="color: #fbbf24;">
+              <span>📖 New Study In Progress (${inProgressList.length})</span>
+              <span class="badge badge-in-progress">First Reading</span>
+            </div>
+          `;
+          inProgressList.forEach((item) => {
+            html += `
+              <div class="today-item-card in-progress">
+                <div>
+                  <span class="paper-code">${item.paperCode} • ${item.paperTitle}</span>
+                  <div class="chapter-title" style="margin-top:4px; font-size:15px">${item.chapter.title}</div>
+                </div>
+                <button class="btn-action-success" onclick="markTodayStudied('${item.paperId}', '${item.chapter.id}')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Mark as Studied Today
+                </button>
+              </div>
+            `;
+          });
+        }
+      }
+
+      container.innerHTML = html;
+    }
+
+    // --- TODAY TIME-SLOT PLANNER VIEW ---
+    function renderTodaySchedule(container) {
+      const today = getTodayDate();
+      const startHr = appState.plannerStartHour || 6;
+      const endHr = appState.plannerEndHour || 23;
+
+      const todaySlotsMap = {};
+      appState.timeSlotAssignments.forEach((slot) => {
+        if (slot.date === today) {
+          todaySlotsMap[slot.slotHour] = slot;
+        }
+      });
+
+      let activeTasks = [];
+      appState.papers.forEach((paper) => {
+        paper.chapters.forEach((ch) => {
+          if (ch.status === "Studied" && ch.revisionDueDate && ch.revisionDueDate <= today) {
+            activeTasks.push({
+              id: ch.id,
+              type: "revision",
+              title: `${paper.code}: ${ch.title}`,
+              subtitle: `Revision Stage ${ch.revisionStage || 1}`,
+              paperId: paper.id,
+              chapterId: ch.id
+            });
+          } else if (ch.status === "In Progress") {
+            activeTasks.push({
+              id: ch.id,
+              type: "study",
+              title: `${paper.code}: ${ch.title}`,
+              subtitle: `New Topic Study`,
+              paperId: paper.id,
+              chapterId: ch.id
+            });
+          }
+        });
+      });
+
+      appState.backlog.forEach((bg) => {
+        if (!bg.watched) {
+          const paper = appState.papers.find((p) => p.id === bg.paperId);
+          const ch = paper ? paper.chapters.find((c) => c.id === bg.chapterId) : null;
+          const countStr = bg.lectureCount ? `${bg.lectureCount} Lecs` : '1 Lec';
+          const topicSub = bg.topicName ? `${countStr} (${bg.durationHours}h) • Topic: ${bg.topicName}` : `${countStr} (${bg.durationHours}h)`;
+          activeTasks.push({
+            id: bg.id,
+            type: "backlog",
+            title: `${paper ? paper.code : ''}: ${ch ? ch.title : 'Lecture'}`,
+            subtitle: topicSub,
+            paperId: bg.paperId,
+            chapterId: bg.chapterId,
+            backlogId: bg.id
+          });
+        }
+      });
+
+      appState.timeSlotAssignments.forEach((slot) => {
+        if (slot.date < today && !slot.completed) {
+          if (!activeTasks.some((t) => t.id === slot.taskId)) {
+            activeTasks.push({
+              id: slot.taskId || slot.id,
+              type: slot.taskType || "task",
+              title: slot.title,
+              subtitle: `Rolled over from ${slot.date}`,
+              paperId: slot.paperId,
+              chapterId: slot.chapterId,
+              backlogId: slot.backlogId
+            });
+          }
+        }
+      });
+
+      const assignedTaskIdsToday = Object.values(todaySlotsMap).map((s) => s.taskId);
+      const unscheduledTasks = activeTasks.filter((t) => !assignedTaskIdsToday.includes(t.id));
+
+      let html = `<div class="time-slot-grid">`;
+
+      for (let hr = startHr; hr <= endHr; hr++) {
+        const slot = todaySlotsMap[hr];
+        const hrStr = hr < 12 ? (hr === 0 ? "12 AM" : `${hr} AM`) : (hr === 12 ? "12 PM" : `${hr - 12} PM`);
+        const nextHrStr = (hr + 1) < 12 ? (`${hr + 1} AM`) : ((hr + 1) === 12 ? "12 PM" : `${hr + 1 - 12} PM`);
+
+        if (slot) {
+          html += `
+            <div class="time-slot-row ${slot.completed ? 'completed-slot' : ''}">
+              <div class="slot-time-label">${hrStr}–${nextHrStr}</div>
+              <div class="slot-content">
+                <div>
+                  <div style="font-size:13px; font-weight:700; color:#fff;">${slot.title}</div>
+                  <div style="font-size:11px; color:var(--text-muted);">${slot.subtitle || ''}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" ${slot.completed ? 'checked' : ''} style="width:18px; height:18px; cursor:pointer;" onchange="toggleSlotCompleted('${slot.id}', this.checked)">
+                  <button style="background:none; border:none; color:#f43f5e; cursor:pointer; font-size:11px;" onclick="unassignSlot('${slot.id}')">✕</button>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="time-slot-row">
+              <div class="slot-time-label">${hrStr}–${nextHrStr}</div>
+              <div class="slot-content">
+                <span class="slot-empty">Empty slot</span>
+                <button class="btn-sm-action" onclick="openAssignSlotModal(${hr})">+ Assign Task</button>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      html += `</div>`;
+
+      // UNSCHEDULED TRAY
+      html += `
+        <div class="unscheduled-tray">
+          <div style="font-size:13px; font-weight:700; color:var(--text-main); display:flex; justify-content:space-between; align-items:center;">
+            <span>📥 Unscheduled Tasks Tray (${unscheduledTasks.length})</span>
+            <span style="font-size:11px; color:var(--text-muted)">Assign to time slots above</span>
+          </div>
+      `;
+
+      if (unscheduledTasks.length === 0) {
+        html += `<div style="font-size:12px; color:var(--text-muted); margin-top:8px; font-style:italic;">All active tasks are assigned to time slots!</div>`;
+      } else {
+        unscheduledTasks.forEach((task) => {
+          html += `
+            <div class="unscheduled-item-card">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:#fff">${task.title}</div>
+                <div style="font-size:11px; color:var(--text-muted)">${task.subtitle}</div>
+              </div>
+              <button class="btn-sm-action" onclick="openAssignSlotModalForTask('${task.id}', '${escapeHtml(task.title)}', '${task.type}', '${task.paperId}', '${task.chapterId}', '${task.backlogId || ''}')">Assign &rarr;</button>
+            </div>
+          `;
+        });
+      }
+
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function toggleSlotCompleted(slotId, completed) {
+      const slot = appState.timeSlotAssignments.find((s) => s.id === slotId);
+      if (slot) {
+        slot.completed = completed;
+        if (completed) {
+          if (slot.taskType === "revision" && slot.paperId && slot.chapterId) {
+            completeRevision(slot.paperId, slot.chapterId);
+          } else if (slot.taskType === "study" && slot.paperId && slot.chapterId) {
+            markTodayStudied(slot.paperId, slot.chapterId);
+          } else if (slot.taskType === "backlog" && slot.backlogId) {
+            markBacklogWatched(slot.backlogId);
+          }
+        }
+        saveState();
+        render();
+      }
+    }
+
+    function unassignSlot(slotId) {
+      appState.timeSlotAssignments = appState.timeSlotAssignments.filter((s) => s.id !== slotId);
+      saveState();
+      render();
+    }
+
+    function openAssignSlotModal(slotHour) {
+      const today = getTodayDate();
+      const hrStr = slotHour < 12 ? (slotHour === 0 ? "12 AM" : `${slotHour} AM`) : (slotHour === 12 ? "12 PM" : `${slotHour - 12} PM`);
+
+      document.getElementById("assign-slot-modal-title").innerText = `Assign Task for ${hrStr}`;
+      const body = document.getElementById("assign-slot-modal-body");
+
+      let activeTasks = [];
+      appState.papers.forEach((paper) => {
+        paper.chapters.forEach((ch) => {
+          if (ch.status === "Studied" && ch.revisionDueDate && ch.revisionDueDate <= today) {
+            activeTasks.push({ id: ch.id, type: "revision", title: `${paper.code}: ${ch.title}`, subtitle: `Revision Stage ${ch.revisionStage || 1}`, paperId: paper.id, chapterId: ch.id });
+          } else if (ch.status === "In Progress") {
+            activeTasks.push({ id: ch.id, type: "study", title: `${paper.code}: ${ch.title}`, subtitle: `New Topic Study`, paperId: paper.id, chapterId: ch.id });
+          }
+        });
+      });
+      appState.backlog.forEach((bg) => {
+        if (!bg.watched) {
+          const paper = appState.papers.find((p) => p.id === bg.paperId);
+          const ch = paper ? paper.chapters.find((c) => c.id === bg.chapterId) : null;
+          activeTasks.push({ id: bg.id, type: "backlog", title: `${paper ? paper.code : ''}: ${ch ? ch.title : 'Lecture'}`, subtitle: `Lecture Video (${bg.durationHours} hrs)`, paperId: bg.paperId, chapterId: bg.chapterId, backlogId: bg.id });
+        }
+      });
+
+      const todaySlotsMap = {};
+      appState.timeSlotAssignments.forEach((s) => { if (s.date === today) todaySlotsMap[s.slotHour] = s; });
+      const assignedIds = Object.values(todaySlotsMap).map((s) => s.taskId);
+      const unscheduled = activeTasks.filter((t) => !assignedIds.includes(t.id));
+
+      if (unscheduled.length === 0) {
+        body.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">No unscheduled tasks available for today!</div>`;
+      } else {
+        let html = `<div style="display:flex; flex-direction:column; gap:8px;">`;
+        unscheduled.forEach((task) => {
+          html += `
+            <div class="unscheduled-item-card" onclick="confirmAssignTaskToSlot(${slotHour}, '${task.id}', '${escapeHtml(task.title)}', '${task.type}', '${task.paperId}', '${task.chapterId}', '${task.backlogId || ''}')" style="cursor:pointer;">
+              <div>
+                <div style="font-size:13px; font-weight:700; color:#fff">${task.title}</div>
+                <div style="font-size:11px; color:var(--text-muted)">${task.subtitle}</div>
+              </div>
+              <button class="btn-primary" style="width:auto; padding:6px 12px;">Assign</button>
+            </div>
+          `;
+        });
+        html += `</div>`;
+        body.innerHTML = html;
+      }
+
+      document.getElementById("assign-slot-modal").classList.add("active");
+    }
+
+    function openAssignSlotModalForTask(taskId, title, taskType, paperId, chapterId, backlogId) {
+      const startHr = appState.plannerStartHour || 6;
+      const endHr = appState.plannerEndHour || 23;
+      const today = getTodayDate();
+
+      document.getElementById("assign-slot-modal-title").innerText = `Assign "${title}" to Time Slot`;
+      const body = document.getElementById("assign-slot-modal-body");
+
+      const todaySlotsMap = {};
+      appState.timeSlotAssignments.forEach((s) => { if (s.date === today) todaySlotsMap[s.slotHour] = s; });
+
+      let html = `<div style="display:flex; flex-direction:column; gap:8px;">`;
+      for (let hr = startHr; hr <= endHr; hr++) {
+        const isOccupied = !!todaySlotsMap[hr];
+        const hrStr = hr < 12 ? (hr === 0 ? "12 AM" : `${hr} AM`) : (hr === 12 ? "12 PM" : `${hr - 12} PM`);
+
+        if (!isOccupied) {
+          html += `
+            <div class="time-slot-row" onclick="confirmAssignTaskToSlot(${hr}, '${taskId}', '${escapeHtml(title)}', '${taskType}', '${paperId}', '${chapterId}', '${backlogId}')" style="cursor:pointer;">
+              <div class="slot-time-label">${hrStr}</div>
+              <div class="slot-content">
+                <span style="font-size:12px; color:var(--accent-primary); font-weight:600;">+ Assign to this slot</span>
+              </div>
+            </div>
+          `;
+        }
+      }
+      html += `</div>`;
+      body.innerHTML = html;
+      document.getElementById("assign-slot-modal").classList.add("active");
+    }
+
+    function confirmAssignTaskToSlot(slotHour, taskId, title, taskType, paperId, chapterId, backlogId) {
+      const today = getTodayDate();
+      appState.timeSlotAssignments = appState.timeSlotAssignments.filter((s) => !(s.date === today && (s.slotHour === slotHour || s.taskId === taskId)));
+
+      appState.timeSlotAssignments.push({
+        id: `slot-${today}-${slotHour}-${Date.now()}`,
+        date: today,
+        slotHour: slotHour,
+        taskId: taskId,
+        taskType: taskType,
+        paperId: paperId,
+        chapterId: chapterId,
+        backlogId: backlogId,
+        title: title,
+        subtitle: taskType === "revision" ? "Revision Check-in" : (taskType === "backlog" ? "Lecture Video" : "Study Session"),
+        completed: false
+      });
+
+      saveState();
+      closeAssignSlotModal();
+      render();
+    }
+
+    function closeAssignSlotModal() {
+      document.getElementById("assign-slot-modal").classList.remove("active");
+    }
+
+    // --- PHASE 3: LECTURE BACKLOG LOG RENDER & HANDLERS ---
+    let backlogViewFilter = "pending"; // 'pending' | 'cleared'
+
+    function renderBacklog(container) {
+      const today = getTodayDate();
+      let pendingTotalHours = 0;
+      let pendingTotalLectures = 0;
+      let pendingList = [];
+      let clearedList = [];
+
+      appState.backlog.forEach((bg) => {
+        if (bg.watched) {
+          clearedList.push(bg);
+        } else {
+          pendingList.push(bg);
+          pendingTotalHours += (parseFloat(bg.durationHours) || 0);
+          pendingTotalLectures += (parseInt(bg.lectureCount, 10) || 1);
+        }
+      });
+
+      pendingList.sort((a, b) => new Date(a.dateAdded) - new Date(b.dateAdded));
+      clearedList.sort((a, b) => new Date(b.watchedDate || b.dateAdded) - new Date(a.watchedDate || a.dateAdded));
+
+      let html = `
+        <div class="backlog-hero">
+          <div>
+            <div class="hero-stat-label" style="color:#a5b4fc">Total Pending Backlog</div>
+            <div class="hero-stat-value" style="color:#fff">${pendingTotalHours.toFixed(1)} <span style="font-size:18px;">hrs</span></div>
+            <div class="hero-stat-subtext" style="color:#c084fc">📹 ${pendingTotalLectures} Lecture(s) across ${pendingList.length} Tasks</div>
+          </div>
+          <button class="btn-primary" style="width:auto; padding:10px 16px;" onclick="openAddBacklogModal()">+ Log Lecture</button>
+        </div>
+
+        <div class="view-toggle-bar">
+          <button class="toggle-option ${backlogViewFilter === 'pending' ? 'active' : ''}" onclick="switchBacklogFilter('pending')">Pending (${pendingList.length})</button>
+          <button class="toggle-option ${backlogViewFilter === 'cleared' ? 'active' : ''}" onclick="switchBacklogFilter('cleared')">Cleared History (${clearedList.length})</button>
+        </div>
+      `;
+
+      const displayList = backlogViewFilter === 'pending' ? pendingList : clearedList;
+
+      if (displayList.length === 0) {
+        html += `
+          <div class="today-empty">
+            <div class="today-empty-icon">📺</div>
+            <div class="today-empty-title">${backlogViewFilter === 'pending' ? 'No Pending Lecture Backlogs!' : 'No Cleared History Yet'}</div>
+            <div class="today-empty-text">${backlogViewFilter === 'pending' ? 'Click "+ Log Lecture" above to record pending video lectures for any subject.' : 'Completed lectures will appear here once marked watched.'}</div>
+          </div>
+        `;
+      } else {
+        displayList.forEach((bg) => {
+          const paper = appState.papers.find((p) => p.id === bg.paperId);
+          const paperCode = paper ? paper.code : 'Subject';
+          const paperTitle = paper ? paper.title : '';
+          const ch = paper ? paper.chapters.find((c) => c.id === bg.chapterId) : null;
+          const chapterTitle = ch ? ch.title : 'Chapter';
+          const topicStr = bg.topicName ? `<div style="font-size:13px; font-weight:700; color:#fbbf24; margin-top:2px;">🎯 Topic: ${bg.topicName}</div>` : '';
+          const countStr = bg.lectureCount ? `${bg.lectureCount} Lecture(s)` : '1 Lecture';
+
+          if (!bg.watched) {
+            html += `
+              <div class="backlog-item-card">
+                <div>
+                  <span class="paper-code" style="background:rgba(168,85,247,0.15); color:#c084fc;">${paperCode} • ${paperTitle}</span>
+                  <div class="chapter-title" style="margin-top:4px; font-size:15px">${chapterTitle}</div>
+                  ${topicStr}
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                    📹 <strong>${countStr}</strong> • Duration: <strong>${bg.durationHours} hrs</strong> • Added: ${bg.dateAdded}
+                  </div>
+                </div>
+                <button class="btn-action-success" style="width:auto; padding:8px 12px; flex-shrink:0;" onclick="markBacklogWatched('${bg.id}')">
+                  ✔️ Watched
+                </button>
+              </div>
+            `;
+          } else {
+            html += `
+              <div class="backlog-item-card watched">
+                <div>
+                  <span class="paper-code">${paperCode}</span>
+                  <div class="chapter-title" style="margin-top:4px; font-size:15px">${chapterTitle}</div>
+                  ${topicStr}
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                    📹 ${countStr} • ${bg.durationHours} hrs • Watched on: ${bg.watchedDate || bg.dateAdded}
+                  </div>
+                </div>
+                <span class="badge badge-studied">Cleared ✓</span>
+              </div>
+            `;
+          }
+        });
+      }
+
+      container.innerHTML = html;
+    }
+
+    function switchBacklogFilter(filter) {
+      backlogViewFilter = filter;
+      render();
+    }
+
+    function markBacklogWatched(backlogId) {
+      const bg = appState.backlog.find((b) => b.id === backlogId);
+      if (bg) {
+        bg.watched = true;
+        bg.watchedDate = getTodayDate();
+
+        const paper = appState.papers.find((p) => p.id === bg.paperId);
+        if (paper) {
+          const ch = paper.chapters.find((c) => c.id === bg.chapterId);
+          if (ch && ch.status === "Not Started") {
+            ch.status = "In Progress";
+          }
+        }
+
+        awardXP(10, "Lecture Watched");
+        saveState();
+        render();
+      }
+    }
+
+    function openAddBacklogModal() {
+      const paperSelect = document.getElementById("backlog-paper-select");
+      if (paperSelect) {
+        paperSelect.innerHTML = appState.papers.map((p) => `
+          <option value="${p.id}">${p.code}: ${p.title}</option>
+        `).join("");
+        onBacklogPaperSelectChange(appState.papers[0]?.id || "paper-1");
+      }
+      document.getElementById("add-backlog-modal").classList.add("active");
+    }
+
+    function closeAddBacklogModal() {
+      document.getElementById("add-backlog-modal").classList.remove("active");
+    }
+
+    // --- PHASE 6: LOG TEST MODAL & TESTS RENDER ---
+    function openLogTestModal() {
+      const paperSelect = document.getElementById("test-paper-select");
+      if (paperSelect) {
+        paperSelect.innerHTML = appState.papers.map((p) => `
+          <option value="${p.id}">${p.code}: ${p.title}</option>
+        `).join("");
+        onTestPaperSelectChange(appState.papers[0]?.id || "paper-1");
+      }
+
+      // Default date to most recent Sunday
+      const today = getTodayDate();
+      const d = new Date(today + "T00:00:00");
+      const dayOfWeek = d.getDay(); // 0 = Sun
+      const daysToSunday = dayOfWeek === 0 ? 0 : dayOfWeek;
+      const recentSundayStr = addDaysToDate(today, -daysToSunday);
+
+      const dateInput = document.getElementById("test-date-input");
+      if (dateInput) dateInput.value = recentSundayStr;
+      document.getElementById("log-test-modal").classList.add("active");
+    }
+
+    function closeLogTestModal() {
+      document.getElementById("log-test-modal").classList.remove("active");
+    }
+
+    function onTestPaperSelectChange(paperId) {
+      const container = document.getElementById("test-chapter-input-list");
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (container && paper) {
+        let html = "";
+        paper.chapters.forEach((ch, idx) => {
+          html += `
+            <div class="editable-chapter-item" style="flex-direction:column; align-items:flex-start; gap:6px;">
+              <div style="font-size:13px; font-weight:700; color:#fff;">${idx + 1}. ${ch.title} ${ch.isWeakTopic ? '<span style="color:#f43f5e; font-size:11px;">⚠️ (Weak Topic: ' + ch.lastTestScore + '%)</span>' : ''}</div>
+              <div style="display:flex; gap:10px; width:100%;">
+                <div style="flex:1;">
+                  <span style="font-size:10px; color:var(--text-muted);">Questions</span>
+                  <input type="number" min="0" id="test-ch-q-${ch.id}" class="form-input" style="padding:6px; font-size:12px;" placeholder="e.g. 10">
+                </div>
+                <div style="flex:1;">
+                  <span style="font-size:10px; color:var(--text-muted);">Correct</span>
+                  <input type="number" min="0" id="test-ch-c-${ch.id}" class="form-input" style="padding:6px; font-size:12px;" placeholder="e.g. 4">
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+    }
+
+    function toggleTestQuickMode(enabled) {
+      document.getElementById("test-quick-mode-fields").style.display = enabled ? "block" : "none";
+      document.getElementById("test-chapter-mode-fields").style.display = enabled ? "none" : "block";
+    }
+
+    function saveLoggedTest() {
+      const paperId = document.getElementById("test-paper-select").value;
+      const testDate = document.getElementById("test-date-input").value || getTodayDate();
+      const testName = document.getElementById("test-name-input").value.trim() || "Sunday Online Test";
+      const isQuickMode = document.getElementById("test-quick-mode-toggle").checked;
+
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (!paper) return;
+
+      let testEntry = {
+        id: `test-${Date.now()}`,
+        paperId: paperId,
+        paperCode: paper.code,
+        paperTitle: paper.title,
+        testDate: testDate,
+        testName: testName,
+        isQuickMode: isQuickMode,
+        chapterScores: [],
+        overallTotal: 0,
+        overallCorrect: 0,
+        overallScorePct: 0
+      };
+
+      if (isQuickMode) {
+        const attempted = parseInt(document.getElementById("test-quick-attempted").value, 10) || 0;
+        const correct = parseInt(document.getElementById("test-quick-correct").value, 10) || 0;
+        testEntry.overallTotal = attempted;
+        testEntry.overallCorrect = correct;
+        testEntry.overallScorePct = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
+      } else {
+        let totalQ = 0;
+        let totalC = 0;
+
+        paper.chapters.forEach((ch) => {
+          const qInput = document.getElementById(`test-ch-q-${ch.id}`);
+          const cInput = document.getElementById(`test-ch-c-${ch.id}`);
+          if (qInput && cInput) {
+            const q = parseInt(qInput.value, 10) || 0;
+            const c = parseInt(cInput.value, 10) || 0;
+
+            if (q > 0) {
+              totalQ += q;
+              totalC += c;
+              const scorePct = Math.round((c / q) * 100);
+
+              testEntry.chapterScores.push({
+                chapterId: ch.id,
+                chapterTitle: ch.title,
+                total: q,
+                correct: c,
+                scorePct: scorePct
+              });
+
+              // CRITICAL WEAK TOPIC FLAGGING LOGIC (< 60% threshold)
+              if (scorePct < 60) {
+                ch.isWeakTopic = true;
+                ch.lastTestScore = scorePct;
+                ch.weakTopicDate = testDate;
+              } else {
+                ch.isWeakTopic = false;
+                ch.lastTestScore = scorePct;
+              }
+            }
+          }
+        });
+
+        testEntry.overallTotal = totalQ;
+        testEntry.overallCorrect = totalC;
+        testEntry.overallScorePct = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0;
+      }
+
+      if (!appState.testsLog) appState.testsLog = [];
+      appState.testsLog.unshift(testEntry);
+
+      awardXP(15, "Sunday Test Logged", { type: "Test" });
+      saveState();
+      closeLogTestModal();
+      render();
+    }
+
+    function renderTests(container) {
+      const logs = appState.testsLog || [];
+      let totalTests = logs.length;
+
+      let html = `
+        <div class="backlog-hero" style="background: linear-gradient(145deg, #4c1d95, #1e1b4b); margin-bottom:16px;">
+          <div>
+            <div class="hero-stat-label" style="color:#c084fc">Weekly Test Performance Tracker</div>
+            <div class="hero-stat-value" style="color:#fff">${totalTests} <span style="font-size:18px;">Tests Logged</span></div>
+            <div class="hero-stat-subtext" style="color:#a5b4fc">Sunday Online Class Tests & Mock Analytics</div>
+          </div>
+          <button class="btn-primary" style="width:auto; padding:10px 16px;" onclick="openLogTestModal()">+ Log Test</button>
+        </div>
+
+        <div class="section-title">
+          <span>Subject Average Performance</span>
+        </div>
+      `;
+
+      appState.papers.forEach((paper) => {
+        const paperTests = logs.filter((l) => l.paperId === paper.id);
+        if (paperTests.length > 0) {
+          const avgScore = Math.round(paperTests.reduce((sum, t) => sum + (t.overallScorePct || 0), 0) / paperTests.length);
+          html += `
+            <div class="capacity-card" style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div>
+                  <span class="paper-code">${paper.code}</span>
+                  <span style="font-size:13px; font-weight:700; color:#fff; margin-left:6px;">${paper.title}</span>
+                </div>
+                <div style="font-size:14px; font-weight:800; color:${avgScore >= 60 ? '#34d399' : '#f43f5e'};">${avgScore}% Avg</div>
+              </div>
+              <div class="progress-bar-track" style="margin-bottom:0; height:6px;">
+                <div class="progress-segment" style="width: ${avgScore}%; background-color: ${avgScore >= 60 ? '#10b981' : '#f43f5e'};"></div>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      html += `
+        <div class="section-title" style="margin-top:24px;">
+          <span>Test History Log</span>
+        </div>
+      `;
+
+      if (logs.length === 0) {
+        html += `
+          <div class="today-empty">
+            <div class="today-empty-icon">📝</div>
+            <div class="today-empty-title">No Tests Logged Yet</div>
+            <div class="today-empty-text">Click "+ Log Test" above to record your Sunday online test scores.</div>
+          </div>
+        `;
+      } else {
+        logs.forEach((test) => {
+          html += `
+            <div class="backlog-item-card" style="margin-bottom:12px; border-left-color:${test.overallScorePct >= 60 ? '#10b981' : '#f43f5e'};">
+              <div>
+                <span class="paper-code" style="background:rgba(99,102,241,0.15); color:#a5b4fc;">${test.paperCode} • ${test.testDate}</span>
+                <div class="chapter-title" style="margin-top:4px; font-size:15px">${test.testName}</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+                  Score: <strong style="color:${test.overallScorePct >= 60 ? '#34d399' : '#f43f5e'}">${test.overallCorrect} / ${test.overallTotal} (${test.overallScorePct}%)</strong>
+                  ${test.isQuickMode ? ' • Quick Mode' : ` • ${test.chapterScores.length} Chapters Tagged`}
+                </div>
+              </div>
+              <span class="badge" style="background:${test.overallScorePct >= 60 ? 'rgba(16,185,129,0.15)' : 'rgba(244,63,94,0.15)'}; color:${test.overallScorePct >= 60 ? '#34d399' : '#f43f5e'}">
+                ${test.overallScorePct}%
+              </span>
+            </div>
+          `;
+        });
+      }
+
+      container.innerHTML = html;
+    }
+
+    function onBacklogPaperSelectChange(paperId) {
+      const chapterSelect = document.getElementById("backlog-chapter-select");
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (chapterSelect && paper) {
+        chapterSelect.innerHTML = paper.chapters.map((ch, idx) => `
+          <option value="${ch.id}">${idx + 1}. ${ch.title} (${ch.status})</option>
+        `).join("");
+      }
+    }
+
+    function saveNewBacklogEntry() {
+      const paperId = document.getElementById("backlog-paper-select").value;
+      const chapterId = document.getElementById("backlog-chapter-select").value;
+      const topicInput = document.getElementById("backlog-topic-input");
+      const countInput = document.getElementById("backlog-count-input");
+      const durationInput = document.getElementById("backlog-duration-input");
+
+      const topicName = topicInput ? topicInput.value.trim() : "";
+      const lectureCount = parseInt(countInput ? countInput.value : "1", 10) || 1;
+      const duration = parseFloat(durationInput ? durationInput.value : "2.0") || 2.0;
+
+      if (!paperId || !chapterId) return;
+
+      appState.backlog.push({
+        id: `backlog-${Date.now()}`,
+        paperId: paperId,
+        chapterId: chapterId,
+        topicName: topicName,
+        lectureCount: lectureCount,
+        durationHours: duration,
+        dateAdded: getTodayDate(),
+        watched: false,
+        watchedDate: null
+      });
+
+      saveState();
+      closeAddBacklogModal();
+      render();
+    }
+
+    function completeRevision(paperId, chapterId) {
+      const today = getTodayDate();
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (paper) {
+        const ch = paper.chapters.find((c) => c.id === chapterId);
+        if (ch) {
+          const isOnTime = !ch.revisionDueDate || ch.revisionDueDate >= today;
+          const currentStage = ch.revisionStage || 1;
+          if (currentStage >= 5) {
+            ch.status = "Mastered";
+            ch.revisionStage = 5;
+            ch.revisionDueDate = null;
+            ch.lastRevisionDate = today;
+          } else {
+            const nextStage = currentStage + 1;
+            const intervalDays = STAGE_INTERVALS[nextStage] || 3;
+            ch.revisionStage = nextStage;
+            ch.revisionDueDate = addDaysToDate(today, intervalDays);
+            ch.lastRevisionDate = today;
+          }
+
+          if (isOnTime) {
+            awardXP(15, "On-Time Revision");
+          } else {
+            awardXP(10, "Revision Completed");
+          }
+
+          saveState();
+          render();
+        }
+      }
+    }
+
+    function markTodayStudied(paperId, chapterId) {
+      setChapterStatus(paperId, chapterId, "Studied");
+    }
+
+    // --- SUBJECT MODAL (CHAPTERS DETAIL) ---
+    function openSubjectModal(paperId) {
+      appState.selectedPaperId = paperId;
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (!paper) return;
+
+      document.getElementById("modal-paper-code").innerText = paper.code;
+      document.getElementById("modal-paper-title").innerText = paper.title;
+
+      renderSubjectModalChapters();
+      document.getElementById("subject-modal").classList.add("active");
+    }
+
+    function closeSubjectModal() {
+      document.getElementById("subject-modal").classList.remove("active");
+      render(); // Refresh dashboard stats
+    }
+
+    function renderSubjectModalChapters() {
+      const container = document.getElementById("modal-chapter-list");
+      const paper = appState.papers.find((p) => p.id === appState.selectedPaperId);
+      if (!paper) return;
+
+      let html = "";
+      paper.chapters.forEach((ch, idx) => {
+        let dateStr = "";
+        if (ch.status === "Studied" && ch.revisionDueDate) {
+          dateStr = `Stage ${ch.revisionStage || 1}/5 • Due: ${ch.revisionDueDate}`;
+        } else if (ch.status === "Mastered") {
+          dateStr = `Mastered ✓ (5 Revisions Done)`;
+        } else if (ch.studiedDate) {
+          dateStr = `Studied on: ${ch.studiedDate}`;
+        }
+
+        html += `
+          <div class="chapter-card">
+            <div class="chapter-header">
+              <div class="chapter-title">${idx + 1}. ${ch.title}</div>
+              ${dateStr ? `<div class="chapter-date">${dateStr}</div>` : ""}
+            </div>
+            <div class="chapter-controls">
+              <button class="status-btn ${ch.status === 'Not Started' ? 'active not-started' : ''}" 
+                onclick="setChapterStatus('${paper.id}', '${ch.id}', 'Not Started')">Not Started</button>
+              <button class="status-btn ${ch.status === 'In Progress' ? 'active in-progress' : ''}" 
+                onclick="setChapterStatus('${paper.id}', '${ch.id}', 'In Progress')">In Progress</button>
+              <button class="status-btn ${ch.status === 'Studied' ? 'active studied' : ''}" 
+                onclick="setChapterStatus('${paper.id}', '${ch.id}', 'Studied')">Studied</button>
+              <button class="status-btn ${ch.status === 'Mastered' ? 'active mastered' : ''}" 
+                onclick="setChapterStatus('${paper.id}', '${ch.id}', 'Mastered')">Mastered</button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function setChapterStatus(paperId, chapterId, status) {
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (paper) {
+        const ch = paper.chapters.find((c) => c.id === chapterId);
+        if (ch) {
+          const oldStatus = ch.status;
+          ch.status = status;
+          const today = getTodayDate();
+          if (status === "Studied") {
+            ch.studiedDate = today;
+            ch.revisionStage = 1;
+            ch.revisionDueDate = addDaysToDate(today, 1);
+            if (oldStatus !== "Studied") {
+              awardXP(10, "New Topic Studied");
+            }
+          } else if (status === "Mastered") {
+            ch.studiedDate = ch.studiedDate || today;
+            ch.revisionStage = 5;
+            ch.revisionDueDate = null;
+          } else {
+            ch.revisionStage = 0;
+            ch.revisionDueDate = null;
+          }
+          saveState();
+          if (document.getElementById("subject-modal").classList.contains("active")) {
+            renderSubjectModalChapters();
+          }
+          render();
+        }
+      }
+    }
+
+    // --- REWARDS SCREEN RENDER ---
+    function renderRewards(container) {
+      updateStreakState();
+      checkBadgeUnlocks();
+
+      const xp = appState.totalXP || 0;
+      const lvl = getLevelInfo(xp);
+      const streak = appState.currentStreak || 0;
+      const showTitle = appState.showLevelTitles !== false;
+      const pct = Math.round((lvl.xpInLevel / 500) * 100);
+
+      let html = `
+        <div class="rewards-hero">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div class="hero-stat-label" style="color:#a5b4fc">Current Rank</div>
+              <div class="hero-stat-value" style="color:#fff">Level ${lvl.levelNum}</div>
+              ${showTitle ? `<div class="hero-stat-subtext" style="color:#c084fc; font-size:16px; margin-top:2px; font-weight:700;">${lvl.title}</div>` : ''}
+            </div>
+            <div style="text-align:right;">
+              <div class="hero-stat-label" style="color:#a5b4fc">Lifetime XP</div>
+              <div class="hero-stat-value" style="color:#fbbf24">${xp} <span style="font-size:18px;">XP</span></div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:6px;">
+              <span>Progress to Level ${lvl.levelNum + 1}</span>
+              <span>${lvl.xpInLevel} / 500 XP</span>
+            </div>
+            <div class="progress-bar-track" style="margin-bottom:0; height:10px;">
+              <div class="progress-segment" style="width: ${pct}%; background-color: #6366f1;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="capacity-card" style="border-color:rgba(245,158,11,0.4); background:rgba(245,158,11,0.05);">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font-size:13px; font-weight:700; color:#fbbf24">🔥 Active Streak</div>
+              <div style="font-size:24px; font-weight:800; color:#fff">${streak} ${streak === 1 ? 'Day' : 'Days'}</div>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); text-align:right; max-width:200px;">
+              ${streak > 0 ? 'Keep studying daily to maintain your momentum!' : 'Complete at least 1 task today to start a streak!'}
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:24px;">
+          <span>Badge Shelf</span>
+          <span style="font-size:12px; color:var(--text-muted);">${(appState.unlockedBadges || []).length} of ${BADGES_DEF.length} Unlocked</span>
+        </div>
+
+        <div class="rewards-badge-grid">
+      `;
+
+      BADGES_DEF.forEach((badge) => {
+        const isUnlocked = (appState.unlockedBadges || []).includes(badge.id);
+        html += `
+          <div class="badge-card ${isUnlocked ? '' : 'locked'}">
+            <div class="badge-icon">${badge.icon}</div>
+            <div class="badge-name">${badge.name}</div>
+            <div class="badge-hint">${isUnlocked ? 'Unlocked ✓' : badge.hint}</div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function toggleShowLevelTitles(enabled) {
+      appState.showLevelTitles = enabled;
+      saveState();
+      render();
+    }
+
+    // --- SETTINGS & DATE SIMULATOR RENDER ---
+    let selectedSettingsPaperId = "paper-1";
+
+    function renderSettings(container) {
+      const currentPaper = appState.papers.find((p) => p.id === selectedSettingsPaperId) || appState.papers[0];
+      const today = getTodayDate();
+      const realToday = new Date().toISOString().split("T")[0];
+      const offset = appState.simulatedDaysOffset || 0;
+      const themeKey = appState.selectedTheme || "indigo";
+
+      let html = `
+        <div class="section-title">
+          <span>Syllabus Customizer & Settings</span>
+        </div>
+
+        <!-- 1. COLOR THEME CUSTOMIZATION -->
+        <div class="settings-group" style="border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.05);">
+          <div class="settings-group-title" style="color: #a5b4fc;">🎨 Color Theme Customization</div>
+          <div class="form-group">
+            <label class="form-label">Select Color Theme</label>
+            <select class="form-select" onchange="applyTheme(this.value)">
+              ${Object.keys(THEMES_DEF).map((k) => `
+                <option value="${k}" ${k === themeKey ? 'selected' : ''}>${THEMES_DEF[k].name}</option>
+              `).join('')}
+            </select>
+          </div>
+        </div>
+
+        <!-- 2. EXAM DATE SETTINGS -->
+        <div class="settings-group" style="border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.05);">
+          <div class="settings-group-title" style="color: #a5b4fc;">🚩 Exam Date Settings</div>
+          <div class="form-group">
+            <label class="form-label">CA Intermediate Exam Date</label>
+            <input type="date" id="settings-exam-date" class="form-input" value="${appState.examDate || '2027-05-27'}" onchange="saveExamDateSetting(this.value)">
+          </div>
+        </div>
+
+        <!-- 3. GAMIFICATION & LEVEL TITLES -->
+        <div class="settings-group" style="border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.05);">
+          <div class="settings-group-title" style="color: #a5b4fc;">🏆 Gamification & Level Titles</div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#fff;">Show CA Journey Level Titles</div>
+              <div style="font-size:11px; color:var(--text-muted);">Display titles like "Article Assistant" alongside level number</div>
+            </div>
+            <input type="checkbox" ${appState.showLevelTitles !== false ? 'checked' : ''} style="width:20px; height:20px; cursor:pointer;" onchange="toggleShowLevelTitles(this.checked)">
+          </div>
+        </div>
+
+        <!-- 4. DAILY CAPACITY & PLANNER WINDOW -->
+        <div class="settings-group" style="border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.05);">
+          <div class="settings-group-title" style="color: #a5b4fc; display: flex; align-items: center; justify-content: space-between;">
+            <span>⚡ Daily Capacity & Time-Slot Window</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Daily Study Budget (Hours)</label>
+            <input type="number" step="0.5" min="1" max="16" id="settings-budget-input" class="form-input" value="${appState.dailyCapacityHours || 4.0}">
+          </div>
+          <div style="display:flex; gap:10px;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Planner Start Hour</label>
+              <select id="settings-start-hr" class="form-select">
+                ${[4,5,6,7,8,9,10].map(h => `<option value="${h}" ${appState.plannerStartHour === h ? 'selected' : ''}>${h}:00 AM</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Planner End Hour</label>
+              <select id="settings-end-hr" class="form-select">
+                ${[18,19,20,21,22,23,24].map(h => `<option value="${h}" ${appState.plannerEndHour === h ? 'selected' : ''}>${h > 12 ? h - 12 : h}:00 PM</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="savePlannerSettings()">Save Capacity & Planner Settings</button>
+        </div>
+
+        <!-- 5. BACKUP & RESTORE DATA -->
+        <div class="settings-group" style="border-color: #34d399; background: rgba(16, 185, 129, 0.05);">
+          <div class="settings-group-title" style="color: #34d399;">💾 Backup & Restore Full Application Data</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+            Export all syllabus edits, test logs, backlog, XP, badges, and settings to a JSON file.
+            <div style="font-size:11px; color:#34d399; margin-top:4px; font-weight:700;">
+              Last Backed Up: ${appState.lastBackupDate || 'Never'}
+            </div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-primary" style="flex:1; background:#10b981;" onclick="exportBackup()">📥 Export Backup JSON</button>
+            <label class="btn-primary" style="flex:1; background:#3b82f6; text-align:center; cursor:pointer;">
+              📤 Import Backup JSON
+              <input type="file" accept=".json" style="display:none;" onchange="handleBackupFileSelect(event)">
+            </label>
+          </div>
+        </div>
+
+        <!-- 6. SYLLABUS & CUSTOM SUBJECT EDITOR -->
+        <div class="settings-group">
+          <div class="settings-group-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>📚 Custom Subject & Syllabus Editor</span>
+            <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:11px;" onclick="openAddSubjectModal()">+ Add Custom Subject</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Select Subject to Edit</label>
+            <select class="form-select" onchange="onSettingsPaperChange(this.value)">
+              ${appState.papers.map((p) => `
+                <option value="${p.id}" ${p.id === currentPaper.id ? 'selected' : ''}>${p.code}: ${p.title}</option>
+              `).join('')}
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label">Add New Chapter to ${currentPaper.code}</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="new-chapter-input" class="form-input" placeholder="e.g. Chapter Name or Module">
+              <button class="btn-primary" style="width:auto; padding:10px 14px;" onclick="addNewChapter('${currentPaper.id}')">Add</button>
+            </div>
+          </div>
+
+          <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-top:14px; margin-bottom:8px;">
+            Existing Chapters in ${currentPaper.code} (${currentPaper.chapters.length})
+          </div>
+      `;
+
+      currentPaper.chapters.forEach((ch, idx) => {
+        html += `
+          <div class="editable-chapter-item">
+            <div class="editable-chapter-title">${idx + 1}. ${ch.title} (${ch.status})</div>
+            <button class="btn-sm-action" onclick="openEditModal('${currentPaper.id}', '${ch.id}')">Rename</button>
+            <button class="btn-sm-danger" onclick="deleteChapter('${currentPaper.id}', '${ch.id}')">Delete</button>
+          </div>
+        `;
+      });
+
+      html += `
+        </div>
+
+        <!-- 7. SPACED REVISION SIMULATOR -->
+        <div class="settings-group" style="border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.05);">
+          <div class="settings-group-title" style="color: #a5b4fc; display: flex; align-items: center; justify-content: space-between;">
+            <span>🧪 Spaced Revision Simulator</span>
+            <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc;">Testing Tool</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+            Simulate future dates to test overdue alerts (+1d, +3d, +7d, +15d, +30d) and verify 7-day stage decay resets.
+          </p>
+
+          <div style="background: var(--bg-dark); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 14px;">
+            <div style="font-size: 12px; color: var(--text-muted);">Real Today Date: <strong style="color:#fff">${realToday}</strong></div>
+            <div style="font-size: 14px; font-weight: 700; color: #6366f1; margin-top: 4px;">
+              Active Simulated Date: ${today} ${offset !== 0 ? `<span style="color:#fbbf24; font-size:12px;">(+${offset} days)</span>` : ''}
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+            <button class="status-btn" onclick="setSimulatedOffset(${offset + 1})">+1 Day</button>
+            <button class="status-btn" onclick="setSimulatedOffset(${offset + 3})">+3 Days</button>
+            <button class="status-btn" onclick="setSimulatedOffset(${offset + 5})">+5 Days</button>
+            <button class="status-btn" style="border-color: #f43f5e; color: #f43f5e;" onclick="setSimulatedOffset(${offset + 8})">+8 Days (Reset)</button>
+            <button class="status-btn" onclick="setSimulatedOffset(${offset + 15})">+15 Days</button>
+            <button class="status-btn" onclick="setSimulatedOffset(${offset + 30})">+30 Days</button>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="number" id="sim-offset-input" class="form-input" placeholder="Set offset in days" value="${offset}" style="flex:1;">
+            <button class="btn-primary" style="width: auto; padding: 10px 14px;" onclick="applyCustomOffset()">Apply</button>
+            <button class="btn-danger" style="width: auto; padding: 10px 14px;" onclick="setSimulatedOffset(0)">Reset Date</button>
+          </div>
+        </div>
+
+        <!-- 8. CUSTOM ROTATING QUOTES -->
+        <div class="settings-group">
+          <div class="settings-group-title">💬 Rotating Study Quotes</div>
+          <div class="form-group">
+            <label class="form-label">Add Custom Quote</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="new-quote-input" class="form-input" placeholder="e.g. Consistency turns average into excellence.">
+              <button class="btn-primary" style="width:auto; padding:10px 14px;" onclick="saveNewQuote()">Add</button>
+            </div>
+          </div>
+
+          <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">
+            Active Quotes List (${(appState.customQuotes && appState.customQuotes.length > 0 ? appState.customQuotes : DEFAULT_QUOTES).length})
+          </div>
+          <div style="max-height:160px; overflow-y:auto;">
+            ${(appState.customQuotes && appState.customQuotes.length > 0 ? appState.customQuotes : DEFAULT_QUOTES).map((q, idx) => `
+              <div class="editable-chapter-item" style="font-size:12px; font-style:italic;">
+                <div>"${q}"</div>
+                ${appState.customQuotes && appState.customQuotes.length > 0 ? `<button class="btn-sm-danger" onclick="deleteCustomQuote(${idx})">Delete</button>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- 9. SCOPED RESET & SAFEGUARDS -->
+        <div class="settings-group" style="margin-top:24px; border-color: rgba(244,63,94,0.4);">
+          <div class="settings-group-title" style="color:#f43f5e">⚠️ Scoped Reset Controls</div>
+          <div class="form-group">
+            <label class="form-label">Reset Single Subject Progress</label>
+            <div style="display:flex; gap:8px;">
+              <select id="reset-subject-select" class="form-select">
+                ${appState.papers.map((p) => `<option value="${p.id}">${p.code}: ${p.title}</option>`).join('')}
+              </select>
+              <button class="btn-danger" style="width:auto; padding:10px 14px;" onclick="resetSingleSubject()">Reset Subject</button>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; border-top:1px solid var(--border-color); padding-top:12px;">
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px">
+              Reset ALL syllabus progress back to Not Started. Requires typing confirmation word.
+            </p>
+            <button class="btn-danger" onclick="openScopedResetModal()">Reset ALL Progress...</button>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    // --- PHASE 7 HELPER FUNCTIONS ---
+    function openAddSubjectModal() {
+      document.getElementById("subject-code-input").value = "";
+      document.getElementById("subject-title-input").value = "";
+      document.getElementById("add-subject-modal").classList.add("active");
+    }
+
+    function closeAddSubjectModal() {
+      document.getElementById("add-subject-modal").classList.remove("active");
+    }
+
+    function saveNewCustomSubject() {
+      const code = document.getElementById("subject-code-input").value.trim();
+      const title = document.getElementById("subject-title-input").value.trim();
+      if (!code || !title) return;
+
+      const newId = `paper-custom-${Date.now()}`;
+      appState.papers.push({
+        id: newId,
+        code: code,
+        title: title,
+        chapters: [
+          { id: `${newId}-ch-1`, title: "Chapter 1: Introduction", status: "Not Started", studiedDate: null, revisionStage: 0, revisionDueDate: null, lastRevisionDate: null }
+        ]
+      });
+
+      saveState();
+      closeAddSubjectModal();
+      render();
+    }
+
+    function openScopedResetModal() {
+      document.getElementById("reset-confirm-text").value = "";
+      document.getElementById("reset-all-modal").classList.add("active");
+    }
+
+    function closeScopedResetModal() {
+      document.getElementById("reset-all-modal").classList.remove("active");
+    }
+
+    function executeScopedReset() {
+      const confirmWord = document.getElementById("reset-confirm-text").value.trim();
+      if (confirmWord !== "RESET") {
+        alert('Please type the exact word "RESET" to confirm resetting all progress.');
+        return;
+      }
+
+      const keepTests = !document.getElementById("reset-clear-tests-check").checked;
+      const keepXP = !document.getElementById("reset-clear-xp-check").checked;
+
+      appState.papers.forEach((p) => {
+        p.chapters.forEach((ch) => {
+          ch.status = "Not Started";
+          ch.studiedDate = null;
+          ch.revisionStage = 0;
+          ch.revisionDueDate = null;
+          ch.lastRevisionDate = null;
+          ch.isWeakTopic = false;
+        });
+      });
+
+      appState.backlog = [];
+      appState.timeSlotAssignments = [];
+      appState.completedDates = {};
+
+      if (!keepTests) {
+        appState.testsLog = [];
+      }
+
+      if (!keepXP) {
+        appState.totalXP = 0;
+        appState.currentStreak = 0;
+        appState.unlockedBadges = [];
+      }
+
+      saveState();
+      closeScopedResetModal();
+      render();
+      alert("Progress successfully reset!");
+    }
+
+    function resetSingleSubject() {
+      const paperId = document.getElementById("reset-subject-select").value;
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (paper) {
+        if (!confirm(`Are you sure you want to reset all chapters in ${paper.code}: ${paper.title} to Not Started?`)) return;
+        paper.chapters.forEach((ch) => {
+          ch.status = "Not Started";
+          ch.studiedDate = null;
+          ch.revisionStage = 0;
+          ch.revisionDueDate = null;
+          ch.lastRevisionDate = null;
+          ch.isWeakTopic = false;
+        });
+        saveState();
+        render();
+        alert(`${paper.code} reset successfully.`);
+      }
+    }
+
+    function exportBackup() {
+      const backupData = {
+        version: "CA_INTER_HQ_V1",
+        exportedAt: new Date().toISOString(),
+        papers: appState.papers,
+        simulatedDaysOffset: appState.simulatedDaysOffset,
+        dailyCapacityHours: appState.dailyCapacityHours,
+        plannerStartHour: appState.plannerStartHour,
+        plannerEndHour: appState.plannerEndHour,
+        todayViewMode: appState.todayViewMode,
+        backlog: appState.backlog,
+        timeSlotAssignments: appState.timeSlotAssignments,
+        totalXP: appState.totalXP,
+        currentStreak: appState.currentStreak,
+        completedDates: appState.completedDates,
+        unlockedBadges: appState.unlockedBadges,
+        examDate: appState.examDate,
+        completionHistory: appState.completionHistory,
+        testsLog: appState.testsLog,
+        customQuotes: appState.customQuotes,
+        selectedTheme: appState.selectedTheme
+      };
+
+      const dateStr = getTodayDate();
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ca_inter_backup_${dateStr}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      appState.lastBackupDate = dateStr;
+      saveState(false);
+      render();
+    }
+
+    let pendingBackupData = null;
+
+    function handleBackupFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data.papers) {
+            alert("Invalid backup file format!");
+            return;
+          }
+          pendingBackupData = data;
+          openRestorePreviewModal(data);
+        } catch (err) {
+          alert("Failed to parse JSON backup file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function openRestorePreviewModal(data) {
+      const container = document.getElementById("restore-preview-body");
+      if (container) {
+        let totalCh = 0;
+        let doneCh = 0;
+        data.papers.forEach((p) => {
+          p.chapters.forEach((c) => {
+            totalCh++;
+            if (c.status === "Studied" || c.status === "Mastered") doneCh++;
+          });
+        });
+
+        const pct = totalCh > 0 ? Math.round((doneCh / totalCh) * 100) : 0;
+        const testsCount = data.testsLog ? data.testsLog.length : 0;
+        const xp = data.totalXP || 0;
+
+        container.innerHTML = `
+          <div class="rewards-hero" style="background: linear-gradient(145deg, #1e1b4b, #311b92); margin-bottom:16px;">
+            <div style="font-size:12px; color:#a5b4fc;">Backup Preview (${data.exportedAt ? data.exportedAt.split("T")[0] : 'File'})</div>
+            <div style="font-size:24px; font-weight:800; color:#fff; margin-top:2px;">${pct}% Syllabus Done</div>
+            <div style="font-size:13px; color:#34d399; margin-top:4px;">⚡ ${xp} XP • 📝 ${testsCount} Tests Logged</div>
+          </div>
+
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">
+            Restoring will update your syllabus progress, backlog, test logs, and XP.
+          </p>
+          <button class="btn-primary" onclick="confirmRestoreData()">Confirm & Restore Backup</button>
+        `;
+      }
+      document.getElementById("restore-preview-modal").classList.add("active");
+    }
+
+    function closeRestorePreviewModal() {
+      document.getElementById("restore-preview-modal").classList.remove("active");
+    }
+
+    function confirmRestoreData() {
+      if (!pendingBackupData) return;
+      const data = pendingBackupData;
+
+      appState.papers = data.papers || appState.papers;
+      appState.simulatedDaysOffset = data.simulatedDaysOffset || 0;
+      appState.dailyCapacityHours = data.dailyCapacityHours || 4.0;
+      appState.plannerStartHour = data.plannerStartHour || 6;
+      appState.plannerEndHour = data.plannerEndHour || 23;
+      appState.todayViewMode = data.todayViewMode || 'list';
+      appState.backlog = data.backlog || [];
+      appState.timeSlotAssignments = data.timeSlotAssignments || [];
+      appState.totalXP = data.totalXP || 0;
+      appState.currentStreak = data.currentStreak || 0;
+      appState.completedDates = data.completedDates || {};
+      appState.unlockedBadges = data.unlockedBadges || [];
+      appState.examDate = data.examDate || "2027-05-27";
+      appState.completionHistory = data.completionHistory || [];
+      appState.testsLog = data.testsLog || [];
+      appState.customQuotes = data.customQuotes || DEFAULT_QUOTES;
+      appState.selectedTheme = data.selectedTheme || "indigo";
+      appState.lastBackupDate = getTodayDate();
+
+      saveState();
+      closeRestorePreviewModal();
+      pendingBackupData = null;
+      render();
+      alert("Backup successfully restored!");
+    }
+
+    function saveNewQuote() {
+      const input = document.getElementById("new-quote-input");
+      const text = input ? input.value.trim() : "";
+      if (!text) return;
+
+      if (!appState.customQuotes || appState.customQuotes.length === 0) {
+        appState.customQuotes = [...DEFAULT_QUOTES];
+      }
+      appState.customQuotes.push(text);
+      saveState();
+      render();
+    }
+
+    function deleteCustomQuote(idx) {
+      if (appState.customQuotes && appState.customQuotes.length > idx) {
+        appState.customQuotes.splice(idx, 1);
+        saveState();
+        render();
+      }
+    }
+
+    function savePlannerSettings() {
+      const budgetInput = document.getElementById("settings-budget-input");
+      const startHrInput = document.getElementById("settings-start-hr");
+      const endHrInput = document.getElementById("settings-end-hr");
+
+      if (budgetInput && startHrInput && endHrInput) {
+        appState.dailyCapacityHours = parseFloat(budgetInput.value) || 4.0;
+        appState.plannerStartHour = parseInt(startHrInput.value, 10) || 6;
+        appState.plannerEndHour = parseInt(endHrInput.value, 10) || 23;
+        saveState();
+        render();
+      }
+    }
+
+    function setSimulatedOffset(days) {
+      appState.simulatedDaysOffset = days;
+      saveState(false);
+      render();
+    }
+
+    function applyCustomOffset() {
+      const input = document.getElementById("sim-offset-input");
+      if (input) {
+        const val = parseInt(input.value, 10);
+        setSimulatedOffset(isNaN(val) ? 0 : val);
+      }
+    }
+
+    function onSettingsPaperChange(paperId) {
+      selectedSettingsPaperId = paperId;
+      render();
+    }
+
+    function addNewChapter(paperId) {
+      const input = document.getElementById("new-chapter-input");
+      const title = input.value.trim();
+      if (!title) return;
+
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (paper) {
+        paper.chapters.push({
+          id: `${paperId}-ch-${Date.now()}`,
+          title: title,
+          status: "Not Started",
+          studiedDate: null,
+          revisionStage: 0,
+          revisionDueDate: null,
+          lastRevisionDate: null
+        });
+        saveState();
+        render();
+      }
+    }
+
+    function deleteChapter(paperId, chapterId) {
+      if (!confirm("Are you sure you want to delete this chapter? Its study progress will be lost.")) return;
+
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (paper) {
+        paper.chapters = paper.chapters.filter((c) => c.id !== chapterId);
+        saveState();
+        render();
+      }
+    }
+
+    function openEditModal(paperId, chapterId) {
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (!paper) return;
+      const ch = paper.chapters.find((c) => c.id === chapterId);
+      if (!ch) return;
+
+      appState.editingChapter = { paperId, chapterId };
+      document.getElementById("edit-chapter-input").value = ch.title;
+      document.getElementById("edit-chapter-modal").classList.add("active");
+    }
+
+    function closeEditModal() {
+      document.getElementById("edit-chapter-modal").classList.remove("active");
+      appState.editingChapter = null;
+    }
+
+    function saveEditedChapter() {
+      if (!appState.editingChapter) return;
+      const { paperId, chapterId } = appState.editingChapter;
+      const newTitle = document.getElementById("edit-chapter-input").value.trim();
+      if (!newTitle) return;
+
+      const paper = appState.papers.find((p) => p.id === paperId);
+      if (paper) {
+        const ch = paper.chapters.find((c) => c.id === chapterId);
+        if (ch) {
+          ch.title = newTitle;
+          saveState();
+          closeEditModal();
+          render();
+        }
+      }
+    }
+
+    function resetToDefaults() {
+      if (!confirm("Are you sure you want to reset the syllabus to standard ICAI defaults? This will erase custom chapters and reset progress.")) return;
+
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY + "_offset");
+      appState.simulatedDaysOffset = 0;
+      initData();
+      saveState();
+      render();
+    }
+
+    // Initialize App
+    window.addEventListener("DOMContentLoaded", () => {
+      initData();
+      render();
+    });
+  </script>
+</body>
+</html>
