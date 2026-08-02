@@ -1149,6 +1149,260 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* Auth Buttons Styling */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .auth-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-auth-login {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-auth-login:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+    }
+
+    .btn-auth-signup {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      border: none;
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 8px var(--accent-glow);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-auth-signup:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-user-profile {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid var(--accent-primary);
+      color: #a5b4fc;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hamburger-btn {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Mobile Drawer CSS */
+    .mobile-nav-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 250;
+      display: none;
+    }
+
+    .mobile-nav-drawer.active {
+      display: block;
+    }
+
+    .drawer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+    }
+
+    .drawer-content {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 280px;
+      max-width: 85vw;
+      height: 100%;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border-color);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .drawer-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .drawer-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+
+    .drawer-nav-item:hover, .drawer-nav-item.active {
+      background: var(--bg-elevated);
+      color: var(--accent-primary);
+    }
+
+    /* Mobile Responsive Breakpoints */
+    @media (max-width: 768px) {
+      .app-container {
+        padding: 12px;
+      }
+      
+      .hamburger-btn {
+        display: flex;
+      }
+
+      .bottom-nav {
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        padding: 6px 4px;
+      }
+
+      .bottom-nav .nav-item {
+        flex-shrink: 0;
+        padding: 4px 10px;
+        min-width: 60px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding-bottom: 14px;
+      }
+
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .brand-title {
+        font-size: 18px;
+      }
+
+      .status-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .hero-stat-value {
+        font-size: 26px;
+      }
+
+      .hero-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+
+      .subject-card-header {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .subject-percentage {
+        text-align: left;
+      }
+
+      .chapter-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .chapter-controls {
+        width: 100%;
+      }
+
+      .status-btn {
+        min-width: 0;
+        padding: 8px 2px;
+        font-size: 10px;
+      }
+
+      .auth-buttons {
+        gap: 6px;
+      }
+
+      .btn-auth-login, .btn-auth-signup {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+
+      .heatmap-grid {
+        grid-template-columns: repeat(10, 1fr);
+      }
+    }
   </style>
 </head>
 <body>
@@ -1165,11 +1419,22 @@
         </div>
         <div class="brand-subtitle">CA Intermediate Command Centre • Phase 5 HQ</div>
       </div>
-      <div style="display:flex; align-items:center; gap:8px;">
+      <div class="header-actions">
         <button class="btn-countdown-pill" onclick="openExamModal()">
           ⏳ <span id="header-countdown-text">...</span>
         </button>
-        <div id="header-gamify-bar" style="display:flex; align-items:center; gap:8px;"></div>
+        <div id="header-gamify-bar" style="display:flex; align-items:center; gap:6px;"></div>
+        <div class="auth-buttons" id="auth-buttons-container">
+          <button class="btn-auth-login" onclick="openLoginModal()">Log In</button>
+          <button class="btn-auth-signup" onclick="openSignUpModal()">Sign Up</button>
+        </div>
+        <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Toggle navigation">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -1463,6 +1728,141 @@
         </div>
 
         <button class="btn-danger" onclick="executeScopedReset()">Confirm Reset All Progress</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGN UP MODAL -->
+  <div id="signup-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeSignUpModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title">Create Your Account</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="settings-group">
+        <form onsubmit="handleSignUp(event)">
+          <div class="form-group">
+            <label class="form-label" for="signup-name">Full Name</label>
+            <input type="text" id="signup-name" class="form-input" placeholder="e.g. Rahul Sharma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" class="form-input" placeholder="name@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-password">Password</label>
+            <input type="password" id="signup-password" class="form-input" placeholder="••••••••" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-confirm-password">Confirm Password</label>
+            <input type="password" id="signup-confirm-password" class="form-input" placeholder="••••••••" required minlength="6">
+          </div>
+          <button type="submit" class="btn-primary" style="margin-top:10px;">Sign Up</button>
+        </form>
+        <div style="text-align:center; margin-top:16px; font-size:13px; color:var(--text-muted);">
+          Already have an account? <a href="#" onclick="closeSignUpModal(); openLoginModal(); return false;" style="color:var(--accent-primary); font-weight:600; text-decoration:none;">Log In</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div id="login-modal" class="view-modal">
+    <div class="modal-header">
+      <button class="btn-icon" onclick="closeLoginModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title-group">
+        <div class="modal-title">Welcome Back</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="settings-group">
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email Address</label>
+            <input type="email" id="login-email" class="form-input" placeholder="name@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-primary" style="margin-top:10px;">Log In</button>
+        </form>
+        <div style="text-align:center; margin-top:16px; font-size:13px; color:var(--text-muted);">
+          Don't have an account? <a href="#" onclick="closeLoginModal(); openSignUpModal(); return false;" style="color:var(--accent-primary); font-weight:600; text-decoration:none;">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE NAVIGATION DRAWER -->
+  <div id="mobile-nav-drawer" class="mobile-nav-drawer">
+    <div class="drawer-overlay" onclick="closeMobileNav()"></div>
+    <div class="drawer-content">
+      <div class="drawer-header">
+        <div class="brand-title" style="font-size:18px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          CA Inter HQ
+        </div>
+        <button class="btn-icon" onclick="closeMobileNav()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer-user-section" id="drawer-auth-container">
+        <button class="btn-auth-login" style="width:100%; margin-bottom:8px; text-align:center; padding:10px;" onclick="closeMobileNav(); openLoginModal();">Log In</button>
+        <button class="btn-auth-signup" style="width:100%; text-align:center; padding:10px;" onclick="closeMobileNav(); openSignUpModal();">Sign Up</button>
+      </div>
+
+      <div class="drawer-nav-list">
+        <button class="drawer-nav-item active" id="drawer-nav-dashboard" onclick="closeMobileNav(); switchTab('dashboard');">
+          <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+          Dashboard
+        </button>
+        <button class="drawer-nav-item" id="drawer-nav-today" onclick="closeMobileNav(); switchTab('today');">
+          <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"></rect><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"></line><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"></line><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"></line></svg>
+          Today Tasks
+        </button>
+        <button class="drawer-nav-item" id="drawer-nav-backlog" onclick="closeMobileNav(); switchTab('backlog');">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+          Lecture Backlog
+        </button>
+        <button class="drawer-nav-item" id="drawer-nav-calendar" onclick="closeMobileNav(); switchTab('calendar');">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Calendar & Exam
+        </button>
+        <button class="drawer-nav-item" id="drawer-nav-progress" onclick="closeMobileNav(); switchTab('progress');">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          Progress Analytics
+        </button>
+        <button class="drawer-nav-item" id="drawer-nav-rewards" onclick="closeMobileNav(); switchTab('rewards');">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+          XP & Badges
+        </button>
+        <button class="drawer-nav-item" id="drawer-nav-tests" onclick="closeMobileNav(); switchTab('tests');">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          Sunday Tests
+        </button>
+        <button class="drawer-nav-item" id="drawer-nav-settings" onclick="closeMobileNav(); switchTab('settings');">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Syllabus & Backup
+        </button>
       </div>
     </div>
   </div>
@@ -1854,13 +2254,16 @@
       }
     }
 
-    function showToast() {
+    function showToast(msg = "Saved ✓") {
       const toast = document.getElementById("toast");
-      toast.classList.add("show");
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => {
-        toast.classList.remove("show");
-      }, 1500);
+      if (toast) {
+        toast.innerText = msg;
+        toast.classList.add("show");
+        clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2000);
+      }
     }
 
     // --- PHASE 7: QUOTES & THEME ENGINE ---
@@ -2110,7 +2513,13 @@
     function switchTab(tab) {
       appState.activeTab = tab;
       document.querySelectorAll(".nav-item").forEach((el) => el.classList.remove("active"));
-      document.getElementById(`nav-${tab}`).classList.add("active");
+      const navEl = document.getElementById(`nav-${tab}`);
+      if (navEl) navEl.classList.add("active");
+
+      document.querySelectorAll(".drawer-nav-item").forEach((el) => el.classList.remove("active"));
+      const drawerEl = document.getElementById(`drawer-nav-${tab}`);
+      if (drawerEl) drawerEl.classList.add("active");
+
       render();
     }
 
@@ -4432,10 +4841,111 @@
       render();
     }
 
+    // --- AUTHENTICATION & MODAL HANDLERS ---
+    function openSignUpModal() {
+      document.getElementById('signup-modal').classList.add('active');
+    }
+    function closeSignUpModal() {
+      document.getElementById('signup-modal').classList.remove('active');
+    }
+    function openLoginModal() {
+      document.getElementById('login-modal').classList.add('active');
+    }
+    function closeLoginModal() {
+      document.getElementById('login-modal').classList.remove('active');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function handleSignUp(e) {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value;
+      const email = document.getElementById('signup-email').value;
+      const pass = document.getElementById('signup-password').value;
+      const confirmPass = document.getElementById('signup-confirm-password').value;
+
+      if (pass !== confirmPass) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      const user = { name, email, loggedIn: true };
+      localStorage.setItem('ca_inter_user', JSON.stringify(user));
+      if (e.target && e.target.reset) e.target.reset();
+      closeSignUpModal();
+      updateAuthUI();
+      showToast("Account created! Welcome, " + name + " 🎉");
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const name = email.split('@')[0];
+      const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+      const user = { name: displayName, email, loggedIn: true };
+      localStorage.setItem('ca_inter_user', JSON.stringify(user));
+      if (e.target && e.target.reset) e.target.reset();
+      closeLoginModal();
+      updateAuthUI();
+      showToast("Welcome back, " + displayName + " 👋");
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('ca_inter_user');
+      updateAuthUI();
+      showToast("Logged out successfully");
+    }
+
+    function updateAuthUI() {
+      const userRaw = localStorage.getItem('ca_inter_user');
+      const container = document.getElementById('auth-buttons-container');
+      const drawerAuth = document.getElementById('drawer-auth-container');
+      if (!container) return;
+
+      if (userRaw) {
+        try {
+          const user = JSON.parse(userRaw);
+          if (user && user.loggedIn) {
+            const profileHTML = `<button class="btn-user-profile" onclick="handleLogout()" title="Click to log out">👤 ${escapeHtml(user.name)}</button>`;
+            container.innerHTML = profileHTML;
+            if (drawerAuth) {
+              drawerAuth.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-dark); padding:10px 12px; border-radius:var(--radius-md); border:1px solid var(--border-color);"><span style="font-size:13px; font-weight:700; color:#fff;">👤 ${escapeHtml(user.name)}</span><button class="btn-sm-danger" onclick="handleLogout(); closeMobileNav();">Log Out</button></div>`;
+            }
+            return;
+          }
+        } catch(err){}
+      }
+
+      const defaultButtons = `<button class="btn-auth-login" onclick="openLoginModal()">Log In</button><button class="btn-auth-signup" onclick="openSignUpModal()">Sign Up</button>`;
+      container.innerHTML = defaultButtons;
+      if (drawerAuth) {
+        drawerAuth.innerHTML = `<button class="btn-auth-login" style="width:100%; margin-bottom:8px; text-align:center; padding:10px;" onclick="closeMobileNav(); openLoginModal();">Log In</button><button class="btn-auth-signup" style="width:100%; text-align:center; padding:10px;" onclick="closeMobileNav(); openSignUpModal();">Sign Up</button>`;
+      }
+    }
+
+    // --- MOBILE DRAWER NAVIGATION HANDLERS ---
+    function toggleMobileNav() {
+      const drawer = document.getElementById('mobile-nav-drawer');
+      if (drawer) {
+        drawer.classList.toggle('active');
+      }
+    }
+
+    function closeMobileNav() {
+      const drawer = document.getElementById('mobile-nav-drawer');
+      if (drawer) {
+        drawer.classList.remove('active');
+      }
+    }
+
     // Initialize App
     window.addEventListener("DOMContentLoaded", () => {
       initData();
       render();
+      updateAuthUI();
     });
   </script>
 </body>
